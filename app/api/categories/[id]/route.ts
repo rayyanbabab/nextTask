@@ -1,11 +1,12 @@
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const categoryId = parseInt(params.id)
+type Context = {
+  params: { id: string }
+}
+
+export async function GET(_req: NextRequest, context: Context) {
+  const categoryId = parseInt(context.params.id)
 
   try {
     const category = await prisma.taskCategory.findUnique({
@@ -23,11 +24,8 @@ export async function GET(
   }
 }
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const categoryId = parseInt(params.id)
+export async function PATCH(req: NextRequest, context: Context) {
+  const categoryId = parseInt(context.params.id)
   const { name } = await req.json()
 
   if (!name) {
@@ -47,11 +45,8 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const categoryId = parseInt(params.id)
+export async function DELETE(_req: NextRequest, context: Context) {
+  const categoryId = parseInt(context.params.id)
 
   try {
     await prisma.taskCategory.delete({
