@@ -1,12 +1,12 @@
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 
-interface Params {
-  params: { id: string }
-}
-
-export async function GET(_req: NextRequest, { params }: Params) {
-  const categoryId = parseInt(params.id)
+export async function GET(
+  _req: NextRequest,
+  context: { params: { id: string } }
+) {
+  const { id } = context.params
+  const categoryId = parseInt(id)
 
   try {
     const category = await prisma.taskCategory.findUnique({
@@ -17,16 +17,18 @@ export async function GET(_req: NextRequest, { params }: Params) {
       return NextResponse.json({ message: 'Category not found' }, { status: 404 })
     }
 
-    return NextResponse.json(category, { status: 200 })
+    return NextResponse.json(category)
   } catch (error) {
-    console.error('Error fetching category:', error)
     return NextResponse.json({ message: 'Server error' }, { status: 500 })
   }
 }
 
-// PATCH update category
-export async function PATCH(req: NextRequest, { params }: Params) {
-  const categoryId = parseInt(params.id)
+export async function PATCH(
+  req: NextRequest,
+  context: { params: { id: string } }
+) {
+  const { id } = context.params
+  const categoryId = parseInt(id)
   const { name } = await req.json()
 
   if (!name) {
@@ -41,23 +43,24 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
     return NextResponse.json(updatedCategory)
   } catch (error) {
-    console.error('Error updating category:', error)
     return NextResponse.json({ error: 'Failed to update category' }, { status: 500 })
   }
 }
 
-// DELETE category
-export async function DELETE(_req: NextRequest, { params }: Params) {
-  const categoryId = parseInt(params.id)
+export async function DELETE(
+  _req: NextRequest,
+  context: { params: { id: string } }
+) {
+  const { id } = context.params
+  const categoryId = parseInt(id)
 
   try {
     await prisma.taskCategory.delete({
       where: { id: categoryId },
     })
 
-    return NextResponse.json({ message: 'Category deleted' }, { status: 200 })
+    return NextResponse.json({ message: 'Category deleted' })
   } catch (error) {
-    console.error('Error deleting category:', error)
     return NextResponse.json({ error: 'Failed to delete category' }, { status: 500 })
   }
 }
