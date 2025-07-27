@@ -1,12 +1,13 @@
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 
+// Gunakan struktur default handler sesuai Next.js
+// @ts-ignore
 export async function GET(
-  _req: NextRequest,
-  context: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: { id: string } }
 ) {
-  const { id } = context.params
-  const categoryId = parseInt(id)
+  const categoryId = parseInt(params.id)
 
   try {
     const category = await prisma.taskCategory.findUnique({
@@ -19,16 +20,16 @@ export async function GET(
 
     return NextResponse.json(category)
   } catch (error) {
+    console.error('Error fetching category:', error)
     return NextResponse.json({ message: 'Server error' }, { status: 500 })
   }
 }
 
 export async function PATCH(
   req: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = context.params
-  const categoryId = parseInt(id)
+  const categoryId = parseInt(params.id)
   const { name } = await req.json()
 
   if (!name) {
@@ -43,16 +44,16 @@ export async function PATCH(
 
     return NextResponse.json(updatedCategory)
   } catch (error) {
+    console.error('Error updating category:', error)
     return NextResponse.json({ error: 'Failed to update category' }, { status: 500 })
   }
 }
 
 export async function DELETE(
-  _req: NextRequest,
-  context: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: { id: string } }
 ) {
-  const { id } = context.params
-  const categoryId = parseInt(id)
+  const categoryId = parseInt(params.id)
 
   try {
     await prisma.taskCategory.delete({
@@ -61,6 +62,7 @@ export async function DELETE(
 
     return NextResponse.json({ message: 'Category deleted' })
   } catch (error) {
+    console.error('Error deleting category:', error)
     return NextResponse.json({ error: 'Failed to delete category' }, { status: 500 })
   }
 }
