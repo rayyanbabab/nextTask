@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int             @id @default(autoincrement())
+  name       String
+  email      String          @unique
+  password   String
+  role       Role            @default(USER)
+  tasks      Task[]
+  logs       ActivityLog[]
+  categories TaskCategory[]
+  createdAt  DateTime        @default(now())
+}
+
+model Task {
+  id            Int           @id @default(autoincrement())
+  title         String
+  description   String?
+  failureReason  String?
+  dueDate       DateTime?
+  status        Status        @default(PROCESS)
+  userId        Int
+  categoryId    Int?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user        User          @relation(fields: [userId], references: [id])
+  category    TaskCategory? @relation(fields: [categoryId], references: [id])
+}
+
+
+model TaskCategory {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+
+  tasks     Task[]
+}
+
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model ActivityLog {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  action    String
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id])
+}
+
+enum Status {
+  PROCESS
+  FAILED
+  SUCCESS
+}
