@@ -1,5 +1,3 @@
-// TIDAK PERLU 'use client'
-
 import { prisma } from '@/lib/prisma'
 import { ActivitySquare, Users, ClipboardList } from 'lucide-react'
 
