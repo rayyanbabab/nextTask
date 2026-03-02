@@ -50,7 +50,7 @@ export default function Page() {
     <FormCard title="Your Task Categories" subtitle="Click a category to see its tasks">
       <div className="space-y-4">
         {categories.map((category) => (
-          <div key={category.id} className="bg-white dark:bg-gray-800 border border-gray-200 rounded-md p-3 shadow-sm">
+          <div key={category.id} className="bg-white border border-gray-200 rounded-md p-3 shadow-sm">
             <div className="flex justify-between items-center cursor-pointer" onClick={() => toggleCategory(category.id)}>
               <div className='flex items-center space-x-2'>
                 <SquarePen className='text-gray-700' />
@@ -65,15 +65,15 @@ export default function Page() {
               <div className="mt-2 space-y-2">
                 {category.tasks.length > 0 ? (
                   category.tasks.map((task) => (
-                    <div key={task.id} className="w-1/2 bg-white border border-gray-200 dark:bg-gray-700 p-2 rounded-lg">
+                    <div key={task.id} className="w-1/2 bg-white border border-gray-200 p-2 rounded-lg">
                       <div className="flex items-center space-x-2">
                         <div className='bg-sky-100 p-2 rounded-md'>
                           <FileText strokeWidth={1.5} className="text-sky-700" />
                         </div>
                         <div className="flex flex-col">
-                          <div className="font-semibold text-sm text-gray-800 dark:text-gray-100">{task.title}</div>
+                          <div className="font-semibold text-sm text-gray-800">{task.title}</div>
                           {task.description && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400">{task.description}</p>
+                            <p className="text-xs text-gray-500">{task.description}</p>
                           )}
                         </div>
                       </div>

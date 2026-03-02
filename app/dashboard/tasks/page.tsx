@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import TaskCard from '@/components/contents/TaskCard'
 import { FormCard } from '@/components/ui/FormCard'
+import TaskTable from '@/components/contents/TaskTable'
 
 type Task = {
   id: number
@@ -33,24 +34,14 @@ export default function TasksPage() {
   }, [])
 
   return (
-    <FormCard title='Tasks' subtitle='Manage your Tasks here'>
-      <main className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {tasks
-          .filter((task) => task.status == 'PROCESS')
-          .map((task) => (
-            <TaskCard
-              id={task.id}
-              title={task.title}
-              description={task.description}
-              status={task.status}
-              createdAt={task.createdAt}
-              updatedAt={task.updatedAt}
-              dueDate={task.dueDate}
-              failureReason={task.failureReason}
-              category={task.category ?? undefined}
-            />
-          ))}
-      </main>
+    <FormCard title='Tasks' subtitle='Manage your Tasks here' actionHref="/dashboard/tasks/create" actionLabel="Create Task">
+      {tasks
+        .filter((task) => task.status == 'PROCESS')
+        .map((task) => (
+          <>
+            <TaskTable tasks={tasks} />
+          </>
+        ))}
     </FormCard>
   )
 }
