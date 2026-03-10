@@ -26,6 +26,7 @@ model Task {
   failureReason  String?
   dueDate       DateTime?
   status        Status        @default(PROCESS)
+  priority      Priority      @default(MEDIUM)
   userId        Int
   categoryId    Int?
   createdAt     DateTime      @default(now())
@@ -40,7 +41,7 @@ model TaskCategory {
   id        Int      @id @default(autoincrement())
   name      String
   createdAt DateTime @default(now())
-  
+
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
 
@@ -66,4 +67,10 @@ enum Status {
   PROCESS
   FAILED
   SUCCESS
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
 }

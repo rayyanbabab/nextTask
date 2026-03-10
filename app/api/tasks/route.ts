@@ -39,6 +39,7 @@ export async function POST(req: Request) {
         dueDate: parsedDueDate,
         createdAt: parsedCreatedAt,
         status: 'PROCESS',
+        priority: 'MEDIUM',
         userId: user.id,
         categoryId: categoryId ? Number(categoryId) : undefined,
       },

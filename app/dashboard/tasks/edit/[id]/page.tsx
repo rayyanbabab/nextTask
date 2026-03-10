@@ -14,6 +14,7 @@ type Task = {
   description?: string
   dueDate?: string
   status: 'PROCESS' | 'SUCCESS' | 'FAILED'
+  priority: 'LOW' | 'MEDIUM' | 'HIGH'
   categoryId?: number
 }
 
@@ -25,6 +26,12 @@ export default function EditTaskPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [categories, setCategories] = useState<{ id: number; name: string }[]>([])
+
+  const priorities: { label: string; value: Task['priority'] }[] = [
+    { label: 'Low', value: 'LOW' },
+    { label: 'Medium', value: 'MEDIUM' },
+    { label: 'High', value: 'HIGH' },
+  ]
 
   useEffect(() => {
     const fetchData = async () => {
@@ -106,6 +113,25 @@ export default function EditTaskPage() {
             {categories.map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {cat.name}
+              </option>
+            ))}
+          </select>
+
+          <label className="block text-sm font-medium text-gray-700 mt-4">
+            Priority
+          </label>
+          <select
+            className="w-full border rounded px-3 py-2"
+            value={task.priority}
+            onChange={(e) =>
+              setTask({ ...task, priority: e.target.value as Task['priority'] })
+            }
+            required
+          >
+            <option value="" disabled>Select priority</option>
+            {priorities.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
               </option>
             ))}
           </select>

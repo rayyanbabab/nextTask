@@ -12,9 +12,7 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  AlertCircle,
   Eye,
-  Download,
   Filter,
   ArrowUpDown,
   Search
@@ -28,12 +26,13 @@ type Task = {
   title: string
   description?: string
   status: 'PROCESS' | 'SUCCESS' | 'FAILED'
+  priority: 'LOW' | 'MEDIUM' | 'HIGH'
   createdAt: string
   updatedAt: string
   dueDate: string
   category?: {
-    id: number
-    name: string
+    id?: number
+    name?: string
   }
   failureReason?: string
 }
@@ -146,7 +145,7 @@ export default function TaskTable({ tasks }: Props) {
             placeholder="Search tasks..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+            className="w-full pl-9 pr-4 py-2 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
           />
         </div>
 
@@ -208,7 +207,7 @@ export default function TaskTable({ tasks }: Props) {
               {...task}
               category={task.category ?? undefined}
               isSelected={selectedTasks.includes(task.id)}
-              onSelect={() => toggleSelectTask(task.id)}
+              onToggleSelect={() => toggleSelectTask(task.id)}
             />
           ))}
 

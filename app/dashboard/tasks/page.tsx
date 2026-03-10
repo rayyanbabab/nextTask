@@ -1,15 +1,15 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import TaskCard from '@/components/contents/TaskCard'
-import { FormCard } from '@/components/ui/FormCard'
 import TaskTable from '@/components/contents/TaskTable'
+import { FormCard } from '@/components/ui/FormCard'
 
 type Task = {
   id: number
   title: string
   description?: string
   status: 'PROCESS' | 'SUCCESS' | 'FAILED'
+  priority: 'LOW' | 'MEDIUM' | 'HIGH'
   createdAt: string
   updatedAt: string
   dueDate: string
@@ -33,15 +33,12 @@ export default function TasksPage() {
     fetchTasks()
   }, [])
 
+  // Jika ingin filter hanya PROCESS, bisa di sini:
+  const processTasks = tasks.filter(task => task.status === 'PROCESS')
+
   return (
     <FormCard title='Tasks' subtitle='Manage your Tasks here' actionHref="/dashboard/tasks/create" actionLabel="Create Task">
-      {tasks
-        .filter((task) => task.status == 'PROCESS')
-        .map((task) => (
-          <>
-            <TaskTable tasks={tasks} />
-          </>
-        ))}
+      <TaskTable tasks={processTasks} />
     </FormCard>
   )
 }

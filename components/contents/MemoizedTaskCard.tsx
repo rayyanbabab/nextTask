@@ -7,6 +7,7 @@ type Props = {
     title: string
     description?: string
     status: 'PROCESS' | 'SUCCESS' | 'FAILED'
+    priority: 'LOW' | 'MEDIUM' | 'HIGH'
     createdAt?: string
     updatedAt?: string
     dueDate?: string
