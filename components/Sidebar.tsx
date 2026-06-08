@@ -1,9 +1,10 @@
 'use client'
 
-import { LogOut, User } from 'lucide-react'
+import { LogOut, Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import clsx from 'clsx'
+import { useState, useEffect } from 'react'
 
 import { useUser } from '@/context/UserContext'
 import { navItems } from '@/constants/navItems'
@@ -13,13 +14,22 @@ export default function Sidebar() {
   const { user, logout } = useUser()
   const pathname = usePathname()
   const router = useRouter()
+  const [open, setOpen] = useState(false)
+
+  // Close sidebar on route change (mobile)
+  useEffect(() => { setOpen(false) }, [pathname])
+
+  // Prevent body scroll when mobile sidebar is open
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [open])
 
   const handleLogout = async () => {
     await logout()
     router.push('/login')
   }
 
-  // Group nav items by section
   const sections = navItems.reduce((acc, item) => {
     const section = item.section || 'Other'
     if (!acc[section]) acc[section] = []
@@ -27,10 +37,10 @@ export default function Sidebar() {
     return acc
   }, {} as Record<string, typeof navItems>)
 
-  return (
-    <aside className="w-64 h-screen fixed top-0 left-0 z-50 bg-white border-r border-gray-100 flex flex-col">
+  const sidebarContent = (
+    <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="px-5 py-5 border-b border-gray-100">
+      <div className="px-5 py-5 border-b border-gray-100 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
             <span className="text-white font-bold text-xs">NT</span>
@@ -40,9 +50,16 @@ export default function Sidebar() {
             <div className="text-[10px] text-gray-400">Task Manager</div>
           </div>
         </div>
+        {/* Close button — mobile only */}
+        <button
+          onClick={() => setOpen(false)}
+          className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:bg-gray-100"
+        >
+          <X size={18} />
+        </button>
       </div>
 
-      {/* Nav Items grouped by section */}
+      {/* Nav Items */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-5">
         {Object.entries(sections).map(([section, items]) => (
           <div key={section}>
@@ -105,6 +122,42 @@ export default function Sidebar() {
           <span>Logout</span>
         </button>
       </div>
-    </aside>
+    </div>
+  )
+
+  return (
+    <>
+      {/* Hamburger button — mobile only */}
+      <button
+        onClick={() => setOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-xl bg-white shadow-md border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all"
+        aria-label="Open menu"
+      >
+        <Menu size={20} />
+      </button>
+
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex w-64 h-screen fixed top-0 left-0 z-50 bg-white border-r border-gray-100 flex-col">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile overlay */}
+      {open && (
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* Mobile drawer */}
+      <aside
+        className={clsx(
+          'lg:hidden fixed top-0 left-0 z-50 h-screen w-72 bg-white shadow-2xl transition-transform duration-300 ease-in-out',
+          open ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        {sidebarContent}
+      </aside>
+    </>
   )
 }

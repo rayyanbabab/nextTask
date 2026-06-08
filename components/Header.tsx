@@ -11,13 +11,14 @@ export default function Header() {
   const router = useRouter()
 
   return (
-    <header className="px-4 md:px-6 py-[18px] fixed top-0 left-0 md:left-64 right-0 z-40 bg-white border-b border-gray-200 flex items-center justify-between">
-      <div className="text-sm md:text-base font-medium text-gray-800">
+    <header className="px-4 md:px-6 py-[18px] fixed top-0 left-0 lg:left-64 right-0 z-40 bg-white border-b border-gray-200 flex items-center justify-between">
+      {/* Left: welcome text — indented on mobile to avoid hamburger overlap */}
+      <div className="pl-12 lg:pl-0 text-sm md:text-base font-medium text-gray-800">
         <span className="text-sm md:text-lg">Welcome, </span>
         <span className="text-sky-700 font-semibold">{user?.name ?? 'Guest'}</span>
       </div>
 
-      <div className="flex items-center gap-2 md:gap-3">
+      <div className="flex items-center gap-1.5 md:gap-2">
         <NotificationBell />
 
         <Button
