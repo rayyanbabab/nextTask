@@ -7,7 +7,7 @@ type Props = {
     title: string
     description?: string
     status: 'PROCESS' | 'SUCCESS' | 'FAILED'
-    priority: 'LOW' | 'MEDIUM' | 'HIGH'
+    priority?: 'LOW' | 'MEDIUM' | 'HIGH'
     createdAt?: string
     updatedAt?: string
     dueDate?: string
@@ -31,6 +31,7 @@ function TaskCardWithSelect({ task, isSelected, onToggleSelect }: Props) {
         title={task.title}
         description={task.description}
         status={task.status}
+        priority={task.priority}
         createdAt={task.createdAt}
         updatedAt={task.updatedAt}
         dueDate={task.dueDate}

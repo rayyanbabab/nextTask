@@ -35,29 +35,41 @@ export default function AuthForm() {
     setLoading(true)
     setError('')
 
-    const res = await fetch(`/api/auth/${isLogin ? 'login' : 'register'}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(form),
-      credentials: 'include',
-    })
+    try {
+      const res = await fetch(`/api/auth/${isLogin ? 'login' : 'register'}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(form),
+        credentials: 'include',
+      })
 
-    const data = await res.json()
-
-    if (res.ok) {
-      setUser(data.user)
-
-      if (data.user.role === 'ADMIN') {
-        router.push('/admin/dashboard')
-      } else {
-        router.push('/dashboard')
+      let data
+      try {
+        data = await res.json()
+      } catch {
+        setError('Server error: Invalid response')
+        setLoading(false)
+        return
       }
-    } else {
-      setError(data.error || 'Gagal')
+
+      if (res.ok) {
+        setUser(data.user)
+
+        if (data.user.role === 'ADMIN') {
+          router.push('/admin/dashboard')
+        } else {
+          router.push('/dashboard')
+        }
+      } else {
+        setError(data.error || 'Gagal')
+      }
+    } catch (err) {
+      setError('Network error: ' + (err instanceof Error ? err.message : 'Unknown'))
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (

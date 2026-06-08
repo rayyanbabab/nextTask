@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     const body = await req.json()
     console.log('Received Body:', body)
 
-    const { title, description, dueDate, categoryId, createdAt } = body
+    const { title, description, dueDate, categoryId, createdAt, recurrence, recurrenceEnd, reminder } = body
 
     if (!title || typeof title !== 'string') {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
@@ -42,6 +42,9 @@ export async function POST(req: Request) {
         priority: 'MEDIUM',
         userId: user.id,
         categoryId: categoryId ? Number(categoryId) : undefined,
+        recurrence: recurrence || 'NONE',
+        recurrenceEnd: recurrenceEnd ? new Date(recurrenceEnd) : undefined,
+        reminder: reminder ? new Date(reminder) : undefined,
       },
     })
 
@@ -64,6 +67,8 @@ export async function GET(req: Request) {
       orderBy: { createdAt: 'desc' },
       include: {
         category: true,
+        subtasks: { orderBy: { createdAt: 'asc' } },
+        labels: { include: { label: true } },
       },
     })
 

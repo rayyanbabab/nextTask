@@ -1,15 +1,19 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-// Endpoint Delete
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
-  if (!params?.id) {
+type Context = {
+  params: Promise<{ id: string }>
+}
+
+export async function DELETE(_req: Request, context: Context) {
+  const { id } = await context.params
+  if (!id) {
     return NextResponse.json({ error: 'Task ID is required' }, { status: 400 })
   }
 
   try {
     await prisma.task.delete({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
     })
 
     return NextResponse.json({ message: 'Task deleted' })
@@ -18,9 +22,15 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   }
 }
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, context: Context) {
+  const { id } = await context.params
   const task = await prisma.task.findUnique({
-    where: { id: Number(params.id) },
+    where: { id: Number(id) },
+    include: {
+      category: true,
+      subtasks: { orderBy: { createdAt: 'asc' } },
+      labels: { include: { label: true } },
+    },
   })
 
   if (!task) {
@@ -30,16 +40,16 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   return new Response(JSON.stringify({ task }), { status: 200 })
 }
 
-// Endpoint Edit
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  const taskId = Number(params.id)
+export async function PATCH(req: Request, context: Context) {
+  const { id } = await context.params
+  const taskId = Number(id)
   if (isNaN(taskId)) {
     return NextResponse.json({ error: 'Invalid task ID' }, { status: 400 })
   }
 
   try {
     const body = await req.json()
-    const { title, description, priority, dueDate, categoryId } = body
+    const { title, description, priority, dueDate, categoryId, recurrence, recurrenceEnd } = body
 
     const updatedTask = await prisma.task.update({
       where: { id: taskId },
@@ -49,6 +59,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         priority,
         dueDate: dueDate ? new Date(dueDate) : undefined,
         categoryId: categoryId || null,
+        recurrence: recurrence !== undefined ? recurrence : undefined,
+        recurrenceEnd: recurrenceEnd ? new Date(recurrenceEnd) : recurrenceEnd === null ? null : undefined,
       },
     })
 
@@ -58,5 +70,3 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     return NextResponse.json({ error: 'Failed to update task' }, { status: 500 })
   }
 }
-
-

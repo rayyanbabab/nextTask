@@ -1,23 +1,28 @@
 'use client'
 
-import { Calendar, Folder, Clock, CheckCircle2, XCircle, SquarePen, Trash2, CircleArrowDown, CircleArrowUp, ChevronsLeftRight } from 'lucide-react'
+import { Calendar, Folder, Clock, CheckCircle2, XCircle, SquarePen, Trash2, CircleArrowDown, CircleArrowUp, ChevronsLeftRight, RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import clsx from 'clsx'
 
-type Task = {
+export type TaskCardProps = {
   id: number
   title: string
   description?: string
   status: 'PROCESS' | 'SUCCESS' | 'FAILED'
-  priority: 'LOW' | 'MEDIUM' | 'HIGH'
-  createdAt: string
-  updatedAt: string
-  dueDate: string
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH'
+  createdAt?: string
+  updatedAt?: string
+  dueDate?: string
   category?: {
     id?: number
     name?: string
   }
   failureReason?: string
+  isSelected?: boolean
+  onToggleSelect?: () => void
+  showCheckbox?: boolean
+  hideEdit?: boolean
+  recurrence?: string
 }
 
 const statusConfig = {
@@ -64,12 +69,15 @@ export default function TaskCard({
   title,
   description,
   status,
-  priority,
+  priority = 'MEDIUM',
   dueDate,
   category,
-  isSelected,
-  onToggleSelect
-}: Task) {
+  isSelected = false,
+  onToggleSelect,
+  showCheckbox = true,
+  hideEdit = false,
+  recurrence,
+}: TaskCardProps) {
   const router = useRouter()
   const sconfig = statusConfig[status]
   const StatusIcon = sconfig.icon
@@ -87,13 +95,15 @@ export default function TaskCard({
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
         <div>
           <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={isSelected}
-              onChange={onToggleSelect}
-              className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-              onClick={(e) => e.stopPropagation()}
-            />
+            {showCheckbox && (
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={onToggleSelect}
+                className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
             <div className={clsx('flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border font-medium', sconfig.bg, sconfig.text)}>
               <StatusIcon className="w-3 h-3" />
               <span>{sconfig.label}</span>
@@ -127,39 +137,51 @@ export default function TaskCard({
             </div>
           )}
 
-          <div className="flex items-center gap-1">
-            <Calendar className="w-3 h-3 text-gray-400" />
-            <span>{new Date(dueDate).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric'
-            })}</span>
-          </div>
+          {dueDate && (
+            <div className="flex items-center gap-1">
+              <Calendar className="w-3 h-3 text-gray-400" />
+              <span>{new Date(dueDate).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              })}</span>
+            </div>
+          )}
+
+          {recurrence && recurrence !== 'NONE' && (
+            <div className="flex items-center gap-1 bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-100">
+              <RefreshCw className="w-3 h-3" />
+              <span className="capitalize text-[10px] font-semibold">
+                {recurrence === 'BIWEEKLY' ? 'Bi-weekly' : recurrence.charAt(0) + recurrence.slice(1).toLowerCase()}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-1 pt-2 border-t border-gray-100">
-          <button
-            onClick={() => router.push(`/dashboard/tasks/edit/${id}`)}
-            className="p-1 pt-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition"
-            title="Edit task"
-          >
-            <SquarePen className="w-4 h-4" />
-          </button>
+        {!hideEdit && (
+          <div className="flex items-center justify-end gap-1 pt-2 border-t border-gray-100">
+            <button
+              onClick={() => router.push(`/dashboard/tasks/edit/${id}`)}
+              className="p-1 pt-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition"
+              title="Edit task"
+            >
+              <SquarePen className="w-4 h-4" />
+            </button>
 
-          <button
-            onClick={() => {
-              if (confirm('Delete this task?')) {
-                fetch(`/api/tasks/${id}`, { method: 'DELETE' }).then(() => router.refresh())
-              }
-            }}
-            className="p-1 pt-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition"
-            title="Delete task"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-
-        </div>
+            <button
+              onClick={() => {
+                if (confirm('Delete this task?')) {
+                  fetch(`/api/tasks/${id}`, { method: 'DELETE' }).then(() => router.refresh())
+                }
+              }}
+              className="p-1 pt-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition"
+              title="Delete task"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

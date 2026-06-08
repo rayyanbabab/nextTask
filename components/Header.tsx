@@ -4,6 +4,7 @@ import { History, ClipboardList, SquarePlus, ScrollText } from 'lucide-react'
 import { useUser } from '@/context/UserContext'
 import { useRouter } from 'next/navigation'
 import { Button } from './ui/Button'
+import NotificationBell from './NotificationBell'
 
 export default function Header() {
   const { user } = useUser()
@@ -17,6 +18,8 @@ export default function Header() {
       </div>
 
       <div className="flex items-center gap-2 md:gap-3">
+        <NotificationBell />
+
         <Button
           size="sm"
           variant="outline"

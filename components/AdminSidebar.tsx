@@ -1,6 +1,6 @@
 'use client'
 
-import { Home, Users, LogOut } from 'lucide-react'
+import { Home, Users, LogOut, ClipboardList } from 'lucide-react'
 import { useUser } from '@/context/UserContext'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
@@ -31,6 +31,10 @@ export default function AdminSidebar() {
 
         <SidebarLink href="/admin/users" icon={Users} label="Users"
           active={pathname === '/admin/users'}
+        />
+
+        <SidebarLink href="/admin/tasks" icon={ClipboardList} label="Semua Tugas"
+          active={pathname === '/admin/tasks'}
         />
       </nav>
 

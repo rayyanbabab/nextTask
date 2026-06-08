@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-
+import { RefreshCw } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/TextArea'
 import { Button } from '@/components/ui/Button'
@@ -16,7 +16,18 @@ type Task = {
   status: 'PROCESS' | 'SUCCESS' | 'FAILED'
   priority: 'LOW' | 'MEDIUM' | 'HIGH'
   categoryId?: number
+  recurrence?: string
+  recurrenceEnd?: string
 }
+
+const RECURRENCE_OPTIONS = [
+  { value: 'NONE', label: 'Does not repeat' },
+  { value: 'DAILY', label: 'Daily' },
+  { value: 'WEEKDAYS', label: 'Every weekday (Mon–Fri)' },
+  { value: 'WEEKLY', label: 'Weekly' },
+  { value: 'BIWEEKLY', label: 'Every 2 weeks' },
+  { value: 'MONTHLY', label: 'Monthly' },
+]
 
 export default function EditTaskPage() {
   const { id } = useParams()
@@ -52,10 +63,15 @@ export default function EditTaskPage() {
     setLoading(true)
     setError('')
 
+    const payload = {
+      ...task,
+      recurrenceEnd: task?.recurrence !== 'NONE' && task?.recurrenceEnd ? task.recurrenceEnd : null,
+    }
+
     const res = await fetch(`/api/tasks/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(task),
+      body: JSON.stringify(payload),
     })
 
     let data = null
@@ -135,6 +151,36 @@ export default function EditTaskPage() {
               </option>
             ))}
           </select>
+        </section>
+
+        {/* Recurrence Section */}
+        <section className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-3">
+          <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+            <RefreshCw className="w-4 h-4 text-blue-500" />
+            Repeat
+          </div>
+          <select
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={task.recurrence || 'NONE'}
+            onChange={(e) => setTask({ ...task, recurrence: e.target.value, recurrenceEnd: '' })}
+          >
+            {RECURRENCE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+
+          {task.recurrence && task.recurrence !== 'NONE' && (
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Repeat Until (optional)</label>
+              <input
+                type="date"
+                value={task.recurrenceEnd ? task.recurrenceEnd.slice(0, 10) : ''}
+                onChange={(e) => setTask({ ...task, recurrenceEnd: e.target.value })}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="text-xs text-gray-400 mt-1">Leave empty to repeat indefinitely</p>
+            </div>
+          )}
         </section>
 
         {error && <p className="text-sm text-red-500">{error}</p>}
