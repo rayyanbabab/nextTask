@@ -1,14 +1,15 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getUserFromToken } from '@/lib/auth'
 
-// POST /api/tasks/[id]/labels — attach label; DELETE body to detach
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+// POST /api/tasks/[id]/labels — attach label; POST with same labelId to detach (toggle)
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await getUserFromToken()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const { id } = await params
   const { labelId } = await req.json()
-  const taskId = Number(params.id)
+  const taskId = Number(id)
 
   // Toggle: if exists, remove; if not, add
   const existing = await prisma.taskLabel.findUnique({
