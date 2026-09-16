@@ -1,4 +1,4 @@
-import { LayoutDashboard, SquarePlus, ClipboardList, History, ScrollText, LayoutGrid, BarChart3, Tag, RefreshCw, CalendarDays } from 'lucide-react'
+import { LayoutDashboard, SquarePlus, ClipboardList, History, ScrollText, LayoutGrid, BarChart3, Tag, RefreshCw, CalendarDays, Settings } from 'lucide-react'
 import { ReactNode } from 'react'
 
 export type NavItem = {
@@ -19,4 +19,5 @@ export const navItems: NavItem[] = [
   { name: 'Task History', href: '/dashboard/histories', icon: <History size={18} />, section: 'Tasks' },
   { name: 'Categories', href: '/dashboard/categories', icon: <ScrollText size={18} />, section: 'Organize' },
   { name: 'Labels', href: '/dashboard/labels', icon: <Tag size={18} />, section: 'Organize' },
+  { name: 'Settings', href: '/dashboard/settings', icon: <Settings size={18} />, section: 'Account' },
 ]

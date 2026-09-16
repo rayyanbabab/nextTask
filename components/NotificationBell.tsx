@@ -72,7 +72,7 @@ export default function NotificationBell() {
     <div className="relative" ref={panelRef}>
       <button
         onClick={handleOpen}
-        className="relative p-2 rounded-xl text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-colors"
+        className="relative p-2 rounded-xl text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-800 dark:hover:text-slate-200 transition-colors"
         title="Notifications"
       >
         <Bell className="w-5 h-5" />
@@ -87,14 +87,14 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-800 z-50 overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/60">
             <div className="flex items-center gap-2">
-              <Bell className="w-4 h-4 text-gray-600" />
-              <span className="text-sm font-semibold text-gray-800">Notifications</span>
+              <Bell className="w-4 h-4 text-gray-600 dark:text-slate-300" />
+              <span className="text-sm font-semibold text-gray-800 dark:text-slate-200">Notifications</span>
             </div>
-            <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600">
+            <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -102,8 +102,8 @@ export default function NotificationBell() {
           {/* Task list */}
           <div className="max-h-80 overflow-y-auto">
             {tasks.length === 0 ? (
-              <div className="py-8 text-center text-gray-400 text-sm">
-                <CalendarClock className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+              <div className="py-8 text-center text-gray-400 dark:text-slate-500 text-sm">
+                <CalendarClock className="w-8 h-8 mx-auto mb-2 text-gray-300 dark:text-slate-600" />
                 No tasks due today
               </div>
             ) : (
@@ -111,17 +111,17 @@ export default function NotificationBell() {
                 <button
                   key={task.id}
                   onClick={() => { router.push(`/dashboard/tasks/${task.id}`); setOpen(false) }}
-                  className="w-full flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 last:border-0"
+                  className="w-full flex items-start gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors text-left border-b border-gray-50 dark:border-slate-800/40 last:border-0"
                 >
                   <div className={clsx(
                     'mt-0.5 w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center',
-                    task.isOverdue ? 'bg-rose-100' : 'bg-amber-100'
+                    task.isOverdue ? 'bg-rose-100 dark:bg-rose-950/60' : 'bg-amber-100 dark:bg-amber-950/60'
                   )}>
-                    <AlertTriangle className={clsx('w-3.5 h-3.5', task.isOverdue ? 'text-rose-500' : 'text-amber-500')} />
+                    <AlertTriangle className={clsx('w-3.5 h-3.5', task.isOverdue ? 'text-rose-500 dark:text-rose-400' : 'text-amber-500 dark:text-amber-400')} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{task.title}</p>
-                    <p className={clsx('text-xs mt-0.5', task.isOverdue ? 'text-rose-500 font-semibold' : 'text-gray-400')}>
+                    <p className="text-sm font-medium text-gray-900 dark:text-slate-100 truncate">{task.title}</p>
+                    <p className={clsx('text-xs mt-0.5', task.isOverdue ? 'text-rose-500 dark:text-rose-400 font-semibold' : 'text-gray-400 dark:text-slate-400')}>
                       {task.isOverdue ? '⚠ Overdue · ' : 'Due today · '}
                       {new Date(task.dueDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                     </p>
@@ -132,10 +132,10 @@ export default function NotificationBell() {
           </div>
 
           {tasks.length > 0 && (
-            <div className="px-4 py-2 border-t border-gray-100 bg-gray-50">
+            <div className="px-4 py-2 border-t border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/60">
               <button
                 onClick={() => { router.push('/dashboard/tasks'); setOpen(false) }}
-                className="text-xs text-blue-600 font-semibold hover:text-blue-700"
+                className="text-xs text-blue-600 dark:text-blue-400 font-semibold hover:text-blue-700 dark:hover:text-blue-300"
               >
                 View all tasks →
               </button>

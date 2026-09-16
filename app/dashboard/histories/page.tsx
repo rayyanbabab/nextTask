@@ -1,7 +1,8 @@
 'use client'
 
-import { Funnel } from 'lucide-react'
+import { Funnel, Download } from 'lucide-react'
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
+import { exportTasksToCsv } from '@/utils/exportCsv'
 
 import { callCapitalize } from '@/function/callCapitalize'
 
@@ -23,6 +24,7 @@ type Task = {
   updatedAt: string
   dueDate: string;
   failureReason: string
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH'
   category: { name: string };
 }
 
@@ -117,9 +119,18 @@ export default function HistoryPage() {
 
         </div>
 
-        {/* KANAN: Select/Deselect/Delete */}
+        {/* KANAN: Select/Deselect/Delete + Export */}
         {filteredTasks.length > 0 && (
           <div className="flex items-center space-x-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => exportTasksToCsv(filteredTasks, 'task-history.csv')}
+              className="flex items-center gap-1 text-gray-700"
+            >
+              <Download strokeWidth={1.5} className="w-4 h-4" />
+              Export CSV
+            </Button>
             {selectedIds.length === 0 ? (
               <Button size="sm" variant="outline" onClick={selectAll}>
                 Select All

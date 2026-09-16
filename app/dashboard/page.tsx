@@ -80,8 +80,8 @@ export default function DashboardPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Welcome back! Here's your productivity overview.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Dashboard</h1>
+          <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">Welcome back! Here's your productivity overview.</p>
         </div>
         <Link
           href="/dashboard/tasks/create"
@@ -97,22 +97,22 @@ export default function DashboardPage() {
         {statCards.map((card) => {
           const Icon = card.icon
           return (
-            <div key={card.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3">
+            <div key={card.label} className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5 flex flex-col gap-3 transition-colors">
               <div className="flex items-center justify-between">
-                <div className={clsx('p-2.5 rounded-xl', card.bg)}>
+                <div className={clsx('p-2.5 rounded-xl', card.bg, 'dark:bg-slate-800')}>
                   <Icon className={clsx('w-5 h-5', card.text)} />
                 </div>
                 {card.label === 'Completed' && stats && (
-                  <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                  <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
                     {stats.successRate}%
                   </span>
                 )}
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-900">
-                  {loading ? <div className="h-7 w-10 bg-gray-100 rounded animate-pulse" /> : card.value}
+                <div className="text-2xl font-bold text-gray-900 dark:text-slate-100">
+                  {loading ? <div className="h-7 w-10 bg-gray-100 dark:bg-slate-800 rounded animate-pulse" /> : card.value}
                 </div>
-                <div className="text-sm text-gray-500 mt-0.5">{card.label}</div>
+                <div className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">{card.label}</div>
               </div>
             </div>
           )
@@ -121,18 +121,18 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Productivity Chart */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-6 transition-colors">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-base font-semibold text-gray-900">Tasks Completed</h2>
-              <p className="text-xs text-gray-500">Last 7 days</p>
+              <h2 className="text-base font-semibold text-gray-900 dark:text-slate-100">Tasks Completed</h2>
+              <p className="text-xs text-gray-500 dark:text-slate-400">Last 7 days</p>
             </div>
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <BarChart3 className="w-4 h-4 text-blue-600" />
+            <div className="p-2 bg-blue-50 dark:bg-slate-800 rounded-lg">
+              <BarChart3 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
           {loading ? (
-            <div className="h-40 bg-gray-50 rounded-xl animate-pulse" />
+            <div className="h-40 bg-gray-50 dark:bg-slate-800/50 rounded-xl animate-pulse" />
           ) : (
             <div className="flex items-end gap-2 h-40">
               {chartData.map((d, i) => (
@@ -144,9 +144,9 @@ export default function DashboardPage() {
                       title={`${d.count} tasks`}
                     />
                   </div>
-                  <span className="text-xs text-gray-400 font-medium">{d.label}</span>
+                  <span className="text-xs text-gray-400 dark:text-slate-500 font-medium">{d.label}</span>
                   {d.count > 0 && (
-                    <span className="text-xs font-bold text-blue-600">{d.count}</span>
+                    <span className="text-xs font-bold text-blue-600 dark:text-blue-400">{d.count}</span>
                   )}
                 </div>
               ))}
@@ -155,16 +155,16 @@ export default function DashboardPage() {
         </div>
 
         {/* Success Rate Ring */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-6 flex flex-col transition-colors">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-gray-900">Success Rate</h2>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-slate-100">Success Rate</h2>
             <TrendingUp className="w-4 h-4 text-emerald-500" />
           </div>
           <div className="flex-1 flex flex-col items-center justify-center gap-4">
             {/* SVG Ring */}
             <div className="relative w-32 h-32">
               <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-                <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f3f4f6" strokeWidth="3" />
+                <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" className="text-gray-100 dark:text-slate-800" strokeWidth="3" />
                 <circle
                   cx="18" cy="18" r="15.9" fill="none"
                   stroke="url(#grad)" strokeWidth="3"
@@ -180,8 +180,8 @@ export default function DashboardPage() {
                 </defs>
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-bold text-gray-900">{stats?.successRate ?? 0}%</span>
-                <span className="text-xs text-gray-400">Success</span>
+                <span className="text-2xl font-bold text-gray-900 dark:text-slate-100">{stats?.successRate ?? 0}%</span>
+                <span className="text-xs text-gray-400 dark:text-slate-500">Success</span>
               </div>
             </div>
             <div className="w-full space-y-2">
@@ -192,8 +192,8 @@ export default function DashboardPage() {
               ].map(item => (
                 <div key={item.label} className="flex items-center gap-2 text-sm">
                   <div className={clsx('w-2.5 h-2.5 rounded-full', item.color)} />
-                  <span className="text-gray-600 flex-1">{item.label}</span>
-                  <span className="font-semibold text-gray-900">{item.count}</span>
+                  <span className="text-gray-600 dark:text-slate-400 flex-1">{item.label}</span>
+                  <span className="font-semibold text-gray-900 dark:text-slate-200">{item.count}</span>
                 </div>
               ))}
             </div>
@@ -202,18 +202,18 @@ export default function DashboardPage() {
       </div>
 
       {/* Today's Tasks */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
-        <div className="flex items-center justify-between p-6 border-b border-gray-50">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm transition-colors">
+        <div className="flex items-center justify-between p-6 border-b border-gray-50 dark:border-slate-800/80">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-orange-50 rounded-lg">
+            <div className="p-2 bg-orange-50 dark:bg-slate-800 rounded-lg">
               <Flame className="w-4 h-4 text-orange-500" />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-gray-900">Due Today</h2>
-              <p className="text-xs text-gray-500">{todayDue.length} task{todayDue.length !== 1 ? 's' : ''} due today</p>
+              <h2 className="text-base font-semibold text-gray-900 dark:text-slate-100">Due Today</h2>
+              <p className="text-xs text-gray-500 dark:text-slate-400">{todayDue.length} task{todayDue.length !== 1 ? 's' : ''} due today</p>
             </div>
           </div>
-          <Link href="/dashboard/tasks" className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+          <Link href="/dashboard/tasks" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center gap-1">
             View all <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -221,15 +221,15 @@ export default function DashboardPage() {
         {todayDue.length === 0 ? (
           <div className="py-12 text-center">
             <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-3" />
-            <p className="text-gray-500 text-sm">No tasks due today — great job!</p>
+            <p className="text-gray-500 dark:text-slate-400 text-sm">No tasks due today — great job!</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-gray-50 dark:divide-slate-800/60">
             {todayDue.map(task => (
               <Link
                 key={task.id}
                 href={`/dashboard/tasks/${task.id}`}
-                className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/80 transition-colors group"
+                className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/80 dark:hover:bg-slate-800/50 transition-colors group"
               >
                 <div className={clsx(
                   'w-2 h-2 rounded-full flex-shrink-0',
@@ -237,12 +237,12 @@ export default function DashboardPage() {
                   task.priority === 'MEDIUM' ? 'bg-amber-500' : 'bg-green-500'
                 )} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+                  <p className="text-sm font-medium text-gray-900 dark:text-slate-200 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                     {task.title}
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
                     {task.category && (
-                      <span className="text-xs text-gray-400">{task.category.name}</span>
+                      <span className="text-xs text-gray-400 dark:text-slate-500">{task.category.name}</span>
                     )}
                     {task.labels.slice(0, 2).map(({ label }) => (
                       <span
@@ -261,7 +261,7 @@ export default function DashboardPage() {
                 )}>
                   {task.priority}
                 </span>
-                <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
+                <ChevronRight className="w-4 h-4 text-gray-300 dark:text-slate-600 group-hover:text-gray-500 dark:group-hover:text-slate-400 transition-colors" />
               </Link>
             ))}
           </div>

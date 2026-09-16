@@ -48,6 +48,13 @@ export async function POST(req: Request) {
       },
     })
 
+    await prisma.activityLog.create({
+      data: {
+        userId: user.id,
+        action: `Created task "${task.title}"`,
+      },
+    }).catch(err => console.error('Failed to log activity:', err))
+
     return NextResponse.json({ message: 'Task created successfully', task }, { status: 201 })
   } catch (err: any) {
     console.error('POST /api/tasks error:', err?.message || err)

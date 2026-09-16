@@ -1,29 +1,46 @@
 'use client'
 
-import { History, ClipboardList, SquarePlus, ScrollText } from 'lucide-react'
+import { History, ClipboardList, SquarePlus, ScrollText, Sun, Moon } from 'lucide-react'
 import { useUser } from '@/context/UserContext'
+import { useTheme } from '@/context/ThemeContext'
 import { useRouter } from 'next/navigation'
 import { Button } from './ui/Button'
 import NotificationBell from './NotificationBell'
 
 export default function Header() {
   const { user } = useUser()
+  const { theme, toggleTheme } = useTheme()
   const router = useRouter()
 
   return (
-    <header className="px-4 md:px-6 py-[18px] fixed top-0 left-0 lg:left-64 right-0 z-40 bg-white border-b border-gray-200 flex items-center justify-between">
+    <header className="px-4 md:px-6 py-[18px] fixed top-0 left-0 lg:left-64 right-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 flex items-center justify-between transition-colors">
       {/* Left: welcome text — indented on mobile to avoid hamburger overlap */}
-      <div className="pl-12 lg:pl-0 text-sm md:text-base font-medium text-gray-800">
+      <div className="pl-12 lg:pl-0 text-sm md:text-base font-medium text-gray-800 dark:text-slate-200">
         <span className="text-sm md:text-lg">Welcome, </span>
-        <span className="text-sky-700 font-semibold">{user?.name ?? 'Guest'}</span>
+        <span className="text-sky-700 dark:text-sky-400 font-semibold">{user?.name ?? 'Guest'}</span>
       </div>
 
       <div className="flex items-center gap-1.5 md:gap-2">
+        {/* Theme Toggle Button */}
+        <button
+          onClick={toggleTheme}
+          aria-label={theme === 'dark' ? 'Ganti ke tema terang' : 'Ganti ke tema gelap'}
+          title={theme === 'dark' ? 'Mode Terang' : 'Mode Gelap'}
+          className="p-2 rounded-xl text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-800 dark:hover:text-slate-200 transition-colors"
+        >
+          {theme === 'dark' ? (
+            <Sun className="w-5 h-5 text-amber-400 animate-in spin-in-90 duration-300" />
+          ) : (
+            <Moon className="w-5 h-5 text-slate-600 animate-in spin-in-90 duration-300" />
+          )}
+        </button>
+
         <NotificationBell />
 
         <Button
           size="sm"
           variant="outline"
+          className="dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
           onClick={() => router.push('/dashboard/categories')}
         >
           <ScrollText strokeWidth={1.5} size={18} />
@@ -33,6 +50,7 @@ export default function Header() {
         <Button
           size="sm"
           variant="outline"
+          className="dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
           onClick={() => router.push('/dashboard/histories')}
         >
           <History strokeWidth={1.5} size={18} />
@@ -42,6 +60,7 @@ export default function Header() {
         <Button
           size="sm"
           variant="outline"
+          className="dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
           onClick={() => router.push('/dashboard/tasks')}
         >
           <ClipboardList strokeWidth={1.5} size={18} />
@@ -59,3 +78,4 @@ export default function Header() {
     </header>
   )
 }
+

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getUserFromToken } from '@/lib/auth'
 
 type Context = {
   params: Promise<{ id: string }>
@@ -36,6 +37,11 @@ function getNextDueDate(currentDueDate: Date, recurrence: string): Date {
 }
 
 export async function PUT(req: Request, context: Context) {
+  const user = await getUserFromToken()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const { id } = await context.params
   const { status, failureReason } = await req.json()
 
@@ -43,12 +49,16 @@ export async function PUT(req: Request, context: Context) {
     return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
   }
 
-  // Fetch current task to check recurrence
+  // Fetch current task to check recurrence and ownership
   const currentTask = await prisma.task.findUnique({
     where: { id: Number(id) },
   })
   if (!currentTask) {
     return NextResponse.json({ error: 'Task not found' }, { status: 404 })
+  }
+
+  if (currentTask.userId !== user.id && user.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Forbidden: You do not own this task' }, { status: 403 })
   }
 
   // Update current task status
@@ -60,6 +70,14 @@ export async function PUT(req: Request, context: Context) {
       completedAt: status === 'SUCCESS' ? new Date() : null,
     },
   })
+
+  // Log activity
+  await prisma.activityLog.create({
+    data: {
+      userId: user.id,
+      action: `Updated task "${task.title}" status to ${status}`,
+    },
+  }).catch(err => console.error('Failed to log activity:', err))
 
   // If task is completed and has an active recurrence pattern, create next task
   let nextTask = null

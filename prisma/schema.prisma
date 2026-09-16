@@ -44,6 +44,9 @@ model Task {
   subtasks  Subtask[]
   labels    TaskLabel[]
   comments  Comment[]
+
+  @@index([userId, status])
+  @@index([userId, dueDate])
 }
 
 model Subtask {

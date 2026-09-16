@@ -4,11 +4,12 @@ import { useState, useMemo } from 'react'
 import {
   LayoutGrid, Table as TableIcon, SquarePen, Trash2, MoreHorizontal,
   Calendar, Folder, Clock, CheckCircle2, XCircle, Eye, Search,
-  ChevronDown, X, Filter, ArrowUpDown, AlertTriangle
+  ChevronDown, X, Filter, ArrowUpDown, AlertTriangle, Download
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import clsx from 'clsx'
 import TaskCard from './TaskCard'
+import { exportTasksToCsv } from '@/utils/exportCsv'
 
 type Task = {
   id: number
@@ -181,6 +182,16 @@ export default function TaskTable({ tasks }: Props) {
               <TableIcon className="w-4 h-4" />
             </button>
           </div>
+
+          {/* Export CSV button */}
+          <button
+            onClick={() => exportTasksToCsv(filteredSorted, 'tasks-export.csv')}
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+            title="Export tasks to CSV"
+          >
+            <Download className="w-3.5 h-3.5 text-gray-500" />
+            <span className="hidden sm:inline">Export</span>
+          </button>
         </div>
       </div>
 
