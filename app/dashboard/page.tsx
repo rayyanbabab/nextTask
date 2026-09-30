@@ -3,9 +3,17 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
-  CheckCircle2, Clock, XCircle, AlertTriangle,
-  TrendingUp, Plus, LayoutGrid, BarChart3,
-  Calendar, Tag, ChevronRight, Flame
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  TrendingUp,
+  Plus,
+  LayoutGrid,
+  BarChart3,
+  ChevronRight,
+  Flame,
+  ArrowUpRight,
+  ListTodo,
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -31,9 +39,9 @@ type Task = {
 }
 
 const priorityColors = {
-  HIGH: 'text-rose-600 bg-rose-50 border-rose-200',
-  MEDIUM: 'text-amber-600 bg-amber-50 border-amber-200',
-  LOW: 'text-green-600 bg-green-50 border-green-200',
+  HIGH: 'text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900/60',
+  MEDIUM: 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900/60',
+  LOW: 'text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700',
 }
 
 export default function DashboardPage() {
@@ -44,253 +52,325 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetch('/api/dashboard/stats')
-      .then(r => r.json())
-      .then(data => {
+      .then((r) => r.json())
+      .then((data) => {
         setStats(data.stats)
-        setChartData(data.chartData)
-        setTodayDue(data.todayDue)
+        setChartData(data.chartData || [])
+        setTodayDue(data.todayDue || [])
         setLoading(false)
       })
       .catch(() => setLoading(false))
   }, [])
 
-  const maxCount = Math.max(...chartData.map(d => d.count), 1)
+  const maxCount = Math.max(...chartData.map((d) => d.count), 1)
 
   const statCards = [
     {
-      label: 'Total Tasks', value: stats?.total ?? '—', icon: LayoutGrid,
-      color: 'from-blue-500 to-indigo-600', bg: 'bg-blue-50', text: 'text-blue-700'
+      label: 'Total Tasks',
+      value: stats?.total ?? 0,
+      icon: ListTodo,
+      badge: 'All time',
+      color: 'text-zinc-900 dark:text-zinc-100',
     },
     {
-      label: 'In Progress', value: stats?.inProgress ?? '—', icon: Clock,
-      color: 'from-amber-400 to-orange-500', bg: 'bg-amber-50', text: 'text-amber-700'
+      label: 'In Progress',
+      value: stats?.inProgress ?? 0,
+      icon: Clock,
+      badge: 'Active',
+      color: 'text-amber-600 dark:text-amber-400',
     },
     {
-      label: 'Completed', value: stats?.completed ?? '—', icon: CheckCircle2,
-      color: 'from-emerald-400 to-green-600', bg: 'bg-emerald-50', text: 'text-emerald-700'
+      label: 'Completed',
+      value: stats?.completed ?? 0,
+      icon: CheckCircle2,
+      badge: `${stats?.successRate ?? 0}% Rate`,
+      color: 'text-emerald-600 dark:text-emerald-400',
     },
     {
-      label: 'Overdue', value: stats?.overdue ?? '—', icon: AlertTriangle,
-      color: 'from-rose-500 to-red-600', bg: 'bg-rose-50', text: 'text-rose-700'
+      label: 'Overdue',
+      value: stats?.overdue ?? 0,
+      icon: AlertTriangle,
+      badge: stats?.overdue ? 'Attention' : 'On Track',
+      color: stats?.overdue ? 'text-rose-600 dark:text-rose-400' : 'text-zinc-500',
     },
   ]
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Dashboard</h1>
-          <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">Welcome back! Here's your productivity overview.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+            Workspace Overview
+          </h1>
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+            Real-time execution metrics and upcoming milestones.
+          </p>
         </div>
-        <Link
-          href="/dashboard/tasks/create"
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          New Task
-        </Link>
+
+        <div className="flex items-center gap-2">
+          <Link
+            href="/dashboard/kanban"
+            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-xs font-medium transition shadow-xs"
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+            <span>Kanban</span>
+          </Link>
+
+          <Link
+            href="/dashboard/tasks/create"
+            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950 text-xs font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition shadow-xs cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>New Task</span>
+          </Link>
+        </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 4 Stat Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         {statCards.map((card) => {
           const Icon = card.icon
           return (
-            <div key={card.label} className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5 flex flex-col gap-3 transition-colors">
+            <div
+              key={card.label}
+              className="bg-white dark:bg-zinc-900/90 rounded-xl border border-zinc-200/80 dark:border-zinc-800 p-5 flex flex-col justify-between shadow-xs transition-colors"
+            >
               <div className="flex items-center justify-between">
-                <div className={clsx('p-2.5 rounded-xl', card.bg, 'dark:bg-slate-800')}>
-                  <Icon className={clsx('w-5 h-5', card.text)} />
-                </div>
-                {card.label === 'Completed' && stats && (
-                  <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
-                    {stats.successRate}%
-                  </span>
-                )}
+                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                  {card.label}
+                </span>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
+                  {card.badge}
+                </span>
               </div>
-              <div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-slate-100">
-                  {loading ? <div className="h-7 w-10 bg-gray-100 dark:bg-slate-800 rounded animate-pulse" /> : card.value}
+
+              <div className="mt-4 flex items-baseline justify-between">
+                <div className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+                  {loading ? (
+                    <div className="h-8 w-12 bg-zinc-100 dark:bg-zinc-800 rounded animate-pulse" />
+                  ) : (
+                    card.value
+                  )}
                 </div>
-                <div className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">{card.label}</div>
+                <Icon className={clsx('w-4 h-4', card.color)} />
               </div>
             </div>
           )
         })}
       </div>
 
+      {/* Main Grid: Completion Activity + Success Rate */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Productivity Chart */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-6 transition-colors">
+        {/* Activity Chart */}
+        <div className="lg:col-span-2 bg-white dark:bg-zinc-900/90 rounded-xl border border-zinc-200/80 dark:border-zinc-800 p-5 sm:p-6 shadow-xs flex flex-col justify-between transition-colors">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-base font-semibold text-gray-900 dark:text-slate-100">Tasks Completed</h2>
-              <p className="text-xs text-gray-500 dark:text-slate-400">Last 7 days</p>
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Tasks Completed
+              </h2>
+              <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
+                Activity across the last 7 days
+              </p>
             </div>
-            <div className="p-2 bg-blue-50 dark:bg-slate-800 rounded-lg">
-              <BarChart3 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-zinc-500 dark:text-zinc-400">
+              <BarChart3 className="w-4 h-4" />
             </div>
           </div>
+
           {loading ? (
-            <div className="h-40 bg-gray-50 dark:bg-slate-800/50 rounded-xl animate-pulse" />
+            <div className="h-44 bg-zinc-50 dark:bg-zinc-800/40 rounded-lg animate-pulse" />
           ) : (
-            <div className="flex items-end gap-2 h-40">
+            <div className="flex items-end gap-2 sm:gap-3 h-44 pt-4 border-b border-zinc-100 dark:border-zinc-800">
               {chartData.map((d, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                  <div className="w-full flex flex-col items-center justify-end" style={{ height: '120px' }}>
-                    <div
-                      className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-lg transition-all duration-500 hover:from-blue-700 hover:to-blue-500"
-                      style={{ height: `${Math.max((d.count / maxCount) * 100, d.count > 0 ? 8 : 2)}%` }}
-                      title={`${d.count} tasks`}
-                    />
-                  </div>
-                  <span className="text-xs text-gray-400 dark:text-slate-500 font-medium">{d.label}</span>
-                  {d.count > 0 && (
-                    <span className="text-xs font-bold text-blue-600 dark:text-blue-400">{d.count}</span>
-                  )}
+                <div
+                  key={i}
+                  className="flex-1 flex flex-col items-center justify-end h-full gap-2 group"
+                >
+                  <span className="text-[11px] font-semibold text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
+                    {d.count > 0 ? d.count : ''}
+                  </span>
+                  <div
+                    className="w-full max-w-[42px] rounded-t-md transition-all duration-300"
+                    style={{
+                      height: `${Math.max((d.count / maxCount) * 110, d.count > 0 ? 8 : 3)}px`,
+                      background:
+                        d.count > 0
+                          ? 'linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%)'
+                          : 'var(--border, #e2e8f0)',
+                    }}
+                    title={`${d.count} tasks on ${d.label}`}
+                  />
+                  <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 pb-1">
+                    {d.label}
+                  </span>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Success Rate Ring */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-6 flex flex-col transition-colors">
+        {/* Success Rate Donut */}
+        <div className="bg-white dark:bg-zinc-900/90 rounded-xl border border-zinc-200/80 dark:border-zinc-800 p-5 sm:p-6 shadow-xs flex flex-col justify-between transition-colors">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-slate-100">Success Rate</h2>
+            <div>
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Completion Rate
+              </h2>
+              <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
+                Total task outcome ratio
+              </p>
+            </div>
             <TrendingUp className="w-4 h-4 text-emerald-500" />
           </div>
-          <div className="flex-1 flex flex-col items-center justify-center gap-4">
+
+          <div className="flex flex-col items-center justify-center py-2 gap-4">
             {/* SVG Ring */}
             <div className="relative w-32 h-32">
               <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-                <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" className="text-gray-100 dark:text-slate-800" strokeWidth="3" />
                 <circle
-                  cx="18" cy="18" r="15.9" fill="none"
-                  stroke="url(#grad)" strokeWidth="3"
+                  cx="18"
+                  cy="18"
+                  r="15.9"
+                  fill="none"
+                  stroke="currentColor"
+                  className="text-zinc-100 dark:text-zinc-800"
+                  strokeWidth="3.2"
+                />
+                <circle
+                  cx="18"
+                  cy="18"
+                  r="15.9"
+                  fill="none"
+                  stroke="#10b981"
+                  strokeWidth="3.2"
                   strokeDasharray={`${stats?.successRate ?? 0} 100`}
                   strokeLinecap="round"
-                  className="transition-all duration-700"
+                  className="transition-all duration-700 ease-out"
                 />
-                <defs>
-                  <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#10b981" />
-                    <stop offset="100%" stopColor="#059669" />
-                  </linearGradient>
-                </defs>
               </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-bold text-gray-900 dark:text-slate-100">{stats?.successRate ?? 0}%</span>
-                <span className="text-xs text-gray-400 dark:text-slate-500">Success</span>
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+                  {stats?.successRate ?? 0}%
+                </span>
+                <span className="text-[10px] uppercase font-semibold tracking-wider text-zinc-400">
+                  Success
+                </span>
               </div>
             </div>
-            <div className="w-full space-y-2">
-              {[
-                { label: 'Completed', count: stats?.completed ?? 0, color: 'bg-emerald-500' },
-                { label: 'Failed', count: stats?.failed ?? 0, color: 'bg-rose-500' },
-                { label: 'In Progress', count: stats?.inProgress ?? 0, color: 'bg-amber-500' },
-              ].map(item => (
-                <div key={item.label} className="flex items-center gap-2 text-sm">
-                  <div className={clsx('w-2.5 h-2.5 rounded-full', item.color)} />
-                  <span className="text-gray-600 dark:text-slate-400 flex-1">{item.label}</span>
-                  <span className="font-semibold text-gray-900 dark:text-slate-200">{item.count}</span>
-                </div>
-              ))}
+
+            {/* Metrics Breakdown */}
+            <div className="w-full space-y-2 pt-2 border-t border-zinc-100 dark:border-zinc-800 text-xs">
+              <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-400">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span>Completed</span>
+                </span>
+                <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                  {stats?.completed ?? 0}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-400">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                  <span>In Progress</span>
+                </span>
+                <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                  {stats?.inProgress ?? 0}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-400">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-rose-500" />
+                  <span>Failed</span>
+                </span>
+                <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                  {stats?.failed ?? 0}
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Today's Tasks */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm transition-colors">
-        <div className="flex items-center justify-between p-6 border-b border-gray-50 dark:border-slate-800/80">
+      {/* Due Today Tasks */}
+      <div className="bg-white dark:bg-zinc-900/90 rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs transition-colors overflow-hidden">
+        <div className="flex items-center justify-between p-5 border-b border-zinc-100 dark:border-zinc-800/80">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-orange-50 dark:bg-slate-800 rounded-lg">
-              <Flame className="w-4 h-4 text-orange-500" />
+            <div className="p-2 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-lg">
+              <Flame className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-gray-900 dark:text-slate-100">Due Today</h2>
-              <p className="text-xs text-gray-500 dark:text-slate-400">{todayDue.length} task{todayDue.length !== 1 ? 's' : ''} due today</p>
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Due Today
+              </h2>
+              <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                {todayDue.length} {todayDue.length === 1 ? 'task' : 'tasks'} scheduled for today
+              </p>
             </div>
           </div>
-          <Link href="/dashboard/tasks" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center gap-1">
-            View all <ChevronRight className="w-3.5 h-3.5" />
+
+          <Link
+            href="/dashboard/tasks"
+            className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+          >
+            <span>View all</span>
+            <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
         {todayDue.length === 0 ? (
           <div className="py-12 text-center">
-            <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-3" />
-            <p className="text-gray-500 dark:text-slate-400 text-sm">No tasks due today — great job!</p>
+            <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2 opacity-80" />
+            <p className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
+              No tasks due today. All caught up!
+            </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-50 dark:divide-slate-800/60">
-            {todayDue.map(task => (
+          <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+            {todayDue.map((task) => (
               <Link
                 key={task.id}
                 href={`/dashboard/tasks/${task.id}`}
-                className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/80 dark:hover:bg-slate-800/50 transition-colors group"
+                className="flex items-center gap-3.5 px-5 py-3 hover:bg-zinc-50/70 dark:hover:bg-zinc-800/40 transition-colors group text-xs"
               >
-                <div className={clsx(
-                  'w-2 h-2 rounded-full flex-shrink-0',
-                  task.priority === 'HIGH' ? 'bg-rose-500' :
-                  task.priority === 'MEDIUM' ? 'bg-amber-500' : 'bg-green-500'
-                )} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-slate-200 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  <p className="font-medium text-zinc-900 dark:text-zinc-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                     {task.title}
                   </p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    {task.category && (
-                      <span className="text-xs text-gray-400 dark:text-slate-500">{task.category.name}</span>
-                    )}
-                    {task.labels.slice(0, 2).map(({ label }) => (
+                  <div className="flex items-center gap-2 mt-0.5 text-[11px] text-zinc-400">
+                    {task.category && <span>{task.category.name}</span>}
+                    {task.labels?.slice(0, 2).map(({ label }) => (
                       <span
                         key={label.name}
-                        className="text-xs px-1.5 py-0.5 rounded-full font-medium"
-                        style={{ backgroundColor: label.color + '20', color: label.color }}
+                        className="px-1.5 py-0.2 rounded-full font-medium"
+                        style={{
+                          backgroundColor: label.color + '20',
+                          color: label.color,
+                        }}
                       >
                         {label.name}
                       </span>
                     ))}
                   </div>
                 </div>
-                <span className={clsx(
-                  'text-xs font-medium px-2 py-1 rounded-lg border',
-                  priorityColors[task.priority]
-                )}>
+
+                <span
+                  className={clsx(
+                    'text-[10px] font-semibold px-2 py-0.5 rounded border',
+                    priorityColors[task.priority]
+                  )}
+                >
                   {task.priority}
                 </span>
-                <ChevronRight className="w-4 h-4 text-gray-300 dark:text-slate-600 group-hover:text-gray-500 dark:group-hover:text-slate-400 transition-colors" />
+
+                <ArrowUpRight className="w-3.5 h-3.5 text-zinc-300 dark:text-zinc-600 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition" />
               </Link>
             ))}
           </div>
         )}
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {[
-          { label: 'Create Task', href: '/dashboard/tasks/create', icon: Plus, color: 'bg-blue-600 text-white hover:bg-blue-700' },
-          { label: 'Kanban Board', href: '/dashboard/kanban', icon: LayoutGrid, color: 'bg-purple-600 text-white hover:bg-purple-700' },
-          { label: 'Analytics', href: '/dashboard/analytics', icon: BarChart3, color: 'bg-emerald-600 text-white hover:bg-emerald-700' },
-          { label: 'Manage Labels', href: '/dashboard/labels', icon: Tag, color: 'bg-orange-500 text-white hover:bg-orange-600' },
-        ].map(action => {
-          const Icon = action.icon
-          return (
-            <Link
-              key={action.label}
-              href={action.href}
-              className={clsx(
-                'flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-colors shadow-sm',
-                action.color
-              )}
-            >
-              <Icon className="w-4 h-4" />
-              {action.label}
-            </Link>
-          )
-        })}
       </div>
     </div>
   )
