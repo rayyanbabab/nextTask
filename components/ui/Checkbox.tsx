@@ -1,27 +1,47 @@
-import React from 'react'
-import clsx from 'clsx'
+'use client'
 
-type CustomCheckboxProps = {
+import * as React from 'react'
+import { Check } from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+export type CustomCheckboxProps = {
   checked?: boolean
   onChange?: (e: React.MouseEvent<HTMLButtonElement>) => void
   className?: string
   disabled?: boolean
+  id?: string
+  'aria-label'?: string
 }
 
-export default function Checkbox({ checked, onChange, className = '', disabled = false }: CustomCheckboxProps) {
+export default function Checkbox({
+  checked = false,
+  onChange,
+  className = '',
+  disabled = false,
+  id,
+  'aria-label': ariaLabel,
+}: CustomCheckboxProps) {
   return (
-    <button type="button" onClick={onChange} disabled={disabled} aria-pressed={checked}
-      className={clsx(
-        'w-5 h-5 rounded border border-gray-400 flex items-center justify-center transition-colors',
-          checked ? 'bg-neutral-800 border-neutral-800' : 'bg-white',
-          disabled && 'opacity-50 cursor-not-allowed',
-          className
+    <button
+      id={id}
+      type="button"
+      role="checkbox"
+      aria-checked={checked}
+      aria-label={ariaLabel}
+      onClick={onChange}
+      disabled={disabled}
+      className={cn(
+        'w-4 h-4 rounded-md border flex items-center justify-center transition-all duration-150 cursor-pointer select-none',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20',
+        checked
+          ? 'bg-blue-600 border-blue-600 text-white dark:bg-blue-600 dark:border-blue-600'
+          : 'bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600',
+        disabled && 'opacity-50 cursor-not-allowed pointer-events-none',
+        className
       )}
     >
       {checked && (
-        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-          <path d="M5 13l4 4L19 7" />
-        </svg>
+        <Check className="w-3 h-3 stroke-[2.5]" />
       )}
     </button>
   )

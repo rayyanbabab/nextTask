@@ -1,15 +1,16 @@
 import React, { ReactNode } from "react"
 import Link from "next/link"
 import { Plus } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 type FormCardProps = {
   title?: string
   subtitle?: string
   children: ReactNode
   className?: string
-
   actionHref?: string
   actionLabel?: string
+  actionIcon?: React.ReactNode
 }
 
 export function FormCard({
@@ -19,33 +20,43 @@ export function FormCard({
   className = "",
   actionHref,
   actionLabel = "Create",
+  actionIcon,
 }: FormCardProps) {
   return (
-    <main
-      className={`mt-4 mx-auto p-6 bg-white rounded-xl shadow border border-gray-200 space-y-6 ${className}`}
+    <div
+      className={cn(
+        "w-full rounded-2xl bg-white dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800 shadow-xs transition-colors p-6 sm:p-7 space-y-6",
+        className
+      )}
     >
-      <div className="flex items-start justify-between">
-        <div>
-          {title && (
-            <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
-          )}
-          {subtitle && (
-            <p className="text-sm text-gray-500">{subtitle}</p>
+      {(title || subtitle || actionHref) && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-zinc-100 dark:border-zinc-800/80">
+          <div>
+            {title && (
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+                {title}
+              </h1>
+            )}
+            {subtitle && (
+              <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                {subtitle}
+              </p>
+            )}
+          </div>
+
+          {actionHref && (
+            <Link
+              href={actionHref}
+              className="inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950 text-xs sm:text-sm font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all shadow-xs shrink-0 self-start sm:self-auto cursor-pointer"
+            >
+              {actionIcon || <Plus className="w-3.5 h-3.5" />}
+              {actionLabel}
+            </Link>
           )}
         </div>
+      )}
 
-        {actionHref && (
-          <Link
-            href={actionHref}
-            className="inline-flex items-center gap-2 bg-slate-600 hover:bg-slate-700 text-white text-sm px-4 py-2 rounded-lg transition"
-          >
-            <Plus className="w-4 h-4" />
-            {actionLabel}
-          </Link>
-        )}
-      </div>
-
-      {children}
-    </main>
+      <div>{children}</div>
+    </div>
   )
 }

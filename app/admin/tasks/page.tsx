@@ -1,7 +1,16 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { ClipboardList, Search, ChevronLeft, ChevronRight, User } from 'lucide-react'
+import {
+  ClipboardList,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  User as UserIcon,
+  Calendar,
+  Folder,
+} from 'lucide-react'
+import clsx from 'clsx'
 
 interface TaskUser {
   id: number
@@ -34,19 +43,25 @@ interface SimpleUser {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  PROCESS: 'bg-blue-50 text-blue-700 border-blue-200',
-  SUCCESS: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  FAILED:  'bg-red-50 text-red-700 border-red-200',
+  PROCESS:
+    'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/60',
+  SUCCESS:
+    'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/60',
+  FAILED:
+    'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/60',
 }
+
 const STATUS_LABELS: Record<string, string> = {
-  PROCESS: 'Proses',
-  SUCCESS: 'Selesai',
-  FAILED:  'Gagal',
+  PROCESS: 'In Progress',
+  SUCCESS: 'Completed',
+  FAILED: 'Failed',
 }
+
 const PRIORITY_STYLES: Record<string, string> = {
-  LOW:    'bg-gray-100 text-gray-600',
-  MEDIUM: 'bg-amber-100 text-amber-700',
-  HIGH:   'bg-red-100 text-red-700',
+  LOW: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700',
+  MEDIUM:
+    'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-amber-200 dark:border-amber-800/60',
+  HIGH: 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border-rose-200 dark:border-rose-800/60',
 }
 
 export default function AdminTaskExplorer() {
@@ -60,11 +75,10 @@ export default function AdminTaskExplorer() {
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
 
-  // Fetch user list for filter dropdown
   useEffect(() => {
     fetch('/api/users')
-      .then(r => r.json())
-      .then((users: SimpleUser[]) => setUserList(users))
+      .then((r) => r.json())
+      .then((users: SimpleUser[]) => setUserList(users || []))
       .catch(console.error)
   }, [])
 
@@ -87,170 +101,204 @@ export default function AdminTaskExplorer() {
     }
   }, [page, statusFilter, priorityFilter, userFilter])
 
-  useEffect(() => { fetchTasks() }, [fetchTasks])
+  useEffect(() => {
+    fetchTasks()
+  }, [fetchTasks])
 
-  // Reset page on filter change
-  useEffect(() => { setPage(1) }, [statusFilter, priorityFilter, userFilter, search])
+  useEffect(() => {
+    setPage(1)
+  }, [statusFilter, priorityFilter, userFilter, search])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     setSearch(searchInput)
   }
 
-  const tasks = data?.tasks.filter(t =>
-    !search || t.title.toLowerCase().includes(search.toLowerCase()) ||
-    t.user.name.toLowerCase().includes(search.toLowerCase())
-  ) ?? []
+  const tasks =
+    data?.tasks.filter(
+      (t) =>
+        !search ||
+        t.title.toLowerCase().includes(search.toLowerCase()) ||
+        t.user.name.toLowerCase().includes(search.toLowerCase())
+    ) ?? []
 
   const totalPages = data ? Math.ceil(data.total / data.limit) : 1
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <ClipboardList className="text-indigo-600 w-6 h-6" />
-          Global Task Explorer
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
+          <ClipboardList className="text-indigo-600 dark:text-indigo-400 w-6 h-6" />
+          <span>Global Task Explorer</span>
         </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          {data ? `${data.total} tugas dari seluruh user` : 'Memuat...'}
+        <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          {data ? `${data.total} tasks registered across all users` : 'Loading system tasks...'}
         </p>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3">
-        {/* Search */}
+      {/* Filters Toolbar */}
+      <div className="flex flex-wrap gap-2.5">
         <form onSubmit={handleSearch} className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 dark:text-zinc-500" />
           <input
             type="text"
-            placeholder="Cari judul atau nama user..."
+            placeholder="Search task or user name..."
             value={searchInput}
-            onChange={e => setSearchInput(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white shadow-sm"
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="w-full h-10 pl-9 pr-4 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs sm:text-sm bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
           />
         </form>
 
-        {/* User Filter */}
         <select
           value={userFilter}
-          onChange={e => setUserFilter(e.target.value)}
-          className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white shadow-sm"
+          onChange={(e) => setUserFilter(e.target.value)}
+          className="h-10 px-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs sm:text-sm bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs focus:outline-none cursor-pointer"
         >
-          <option value="">Semua User</option>
-          {userList.map(u => (
-            <option key={u.id} value={String(u.id)}>{u.name}</option>
+          <option value="">All Users</option>
+          {userList.map((u) => (
+            <option key={u.id} value={String(u.id)}>
+              {u.name}
+            </option>
           ))}
         </select>
 
-        {/* Status Filter */}
         <select
           value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value)}
-          className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white shadow-sm"
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="h-10 px-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs sm:text-sm bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs focus:outline-none cursor-pointer"
         >
-          <option value="">Semua Status</option>
-          <option value="PROCESS">Proses</option>
-          <option value="SUCCESS">Selesai</option>
-          <option value="FAILED">Gagal</option>
+          <option value="">All Statuses</option>
+          <option value="PROCESS">In Progress</option>
+          <option value="SUCCESS">Completed</option>
+          <option value="FAILED">Failed</option>
         </select>
 
-        {/* Priority Filter */}
         <select
           value={priorityFilter}
-          onChange={e => setPriorityFilter(e.target.value)}
-          className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white shadow-sm"
+          onChange={(e) => setPriorityFilter(e.target.value)}
+          className="h-10 px-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs sm:text-sm bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs focus:outline-none cursor-pointer"
         >
-          <option value="">Semua Prioritas</option>
-          <option value="HIGH">Tinggi</option>
-          <option value="MEDIUM">Sedang</option>
-          <option value="LOW">Rendah</option>
+          <option value="">All Priorities</option>
+          <option value="HIGH">High</option>
+          <option value="MEDIUM">Medium</option>
+          <option value="LOW">Low</option>
         </select>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      {/* Table Card */}
+      <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs overflow-hidden transition-colors">
         {loading ? (
-          <div className="p-12 text-center">
-            <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-gray-500 text-sm">Memuat data...</p>
+          <div className="p-12 text-center text-xs text-zinc-400">
+            Loading tasks...
           </div>
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
+              <table className="min-w-full text-xs text-left">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100">
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Judul Tugas</th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      <div className="flex items-center gap-1.5"><User size={12} /> User</div>
-                    </th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Prioritas</th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kategori</th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Batas Waktu</th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Dibuat</th>
+                  <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 uppercase tracking-wider font-semibold">
+                    <th className="px-6 py-3.5">Task Title</th>
+                    <th className="px-6 py-3.5">User</th>
+                    <th className="px-6 py-3.5">Status</th>
+                    <th className="px-6 py-3.5">Priority</th>
+                    <th className="px-6 py-3.5">Category</th>
+                    <th className="px-6 py-3.5">Due Date</th>
+                    <th className="px-6 py-3.5">Created</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/70">
                   {tasks.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center text-gray-400">
-                        Tidak ada tugas ditemukan.
+                      <td
+                        colSpan={7}
+                        className="px-6 py-12 text-center text-zinc-400"
+                      >
+                        No tasks found matching filter criteria.
                       </td>
                     </tr>
                   ) : (
-                    tasks.map(task => (
-                      <tr key={task.id} className="hover:bg-gray-50/60 transition-colors">
+                    tasks.map((task) => (
+                      <tr
+                        key={task.id}
+                        className="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition-colors"
+                      >
                         {/* Title */}
-                        <td className="px-6 py-4 max-w-[220px]">
-                          <p className="font-medium text-gray-900 truncate">{task.title}</p>
+                        <td className="px-6 py-4 max-w-xs truncate font-medium text-zinc-900 dark:text-zinc-100">
+                          {task.title}
                         </td>
 
                         {/* User */}
                         <td className="px-6 py-4">
-                          <div>
-                            <p className="font-medium text-gray-800 text-xs">{task.user.name}</p>
-                            <p className="text-gray-400 text-xs">{task.user.email}</p>
+                          <div className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300">
+                            <UserIcon className="w-3.5 h-3.5 text-zinc-400" />
+                            <span>{task.user.name}</span>
                           </div>
                         </td>
 
                         {/* Status */}
                         <td className="px-6 py-4">
-                          <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold border ${STATUS_STYLES[task.status]}`}>
-                            {STATUS_LABELS[task.status]}
+                          <span
+                            className={clsx(
+                              'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border',
+                              STATUS_STYLES[task.status]
+                            )}
+                          >
+                            {STATUS_LABELS[task.status] || task.status}
                           </span>
                         </td>
 
                         {/* Priority */}
                         <td className="px-6 py-4">
-                          <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${PRIORITY_STYLES[task.priority]}`}>
-                            {task.priority === 'HIGH' ? 'Tinggi' : task.priority === 'MEDIUM' ? 'Sedang' : 'Rendah'}
+                          <span
+                            className={clsx(
+                              'inline-flex items-center px-2 py-0.5 rounded border text-[11px] font-medium',
+                              PRIORITY_STYLES[task.priority]
+                            )}
+                          >
+                            {task.priority}
                           </span>
                         </td>
 
                         {/* Category */}
-                        <td className="px-6 py-4 text-gray-500 text-xs">
-                          {task.category?.name ?? <span className="text-gray-300">—</span>}
-                        </td>
-
-                        {/* Due Date */}
-                        <td className="px-6 py-4 text-xs">
-                          {task.dueDate ? (
-                            <span className={new Date(task.dueDate) < new Date() && task.status === 'PROCESS'
-                              ? 'text-red-500 font-medium'
-                              : 'text-gray-500'
-                            }>
-                              {new Date(task.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        <td className="px-6 py-4 text-zinc-500 dark:text-zinc-400">
+                          {task.category ? (
+                            <span className="inline-flex items-center gap-1">
+                              <Folder className="w-3 h-3 text-zinc-400" />
+                              <span>{task.category.name}</span>
                             </span>
                           ) : (
-                            <span className="text-gray-300">—</span>
+                            <span className="text-zinc-400">—</span>
                           )}
                         </td>
 
-                        {/* Created At */}
-                        <td className="px-6 py-4 text-gray-400 text-xs">
-                          {new Date(task.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {/* Due Date */}
+                        <td className="px-6 py-4 text-zinc-500 dark:text-zinc-400">
+                          {task.dueDate ? (
+                            <span className="inline-flex items-center gap-1">
+                              <Calendar className="w-3 h-3 text-zinc-400" />
+                              <span>
+                                {new Date(task.dueDate).toLocaleDateString(
+                                  'en-US',
+                                  {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                  }
+                                )}
+                              </span>
+                            </span>
+                          ) : (
+                            <span className="text-zinc-400">—</span>
+                          )}
+                        </td>
+
+                        {/* Created */}
+                        <td className="px-6 py-4 text-zinc-400 font-mono text-[11px]">
+                          {new Date(task.createdAt).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                          })}
                         </td>
                       </tr>
                     ))
@@ -259,42 +307,26 @@ export default function AdminTaskExplorer() {
               </table>
             </div>
 
-            {/* Pagination */}
+            {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
-                <p className="text-xs text-gray-500">
-                  Halaman {page} dari {totalPages} · Total {data?.total} tugas
-                </p>
-                <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between px-6 py-3 border-t border-zinc-100 dark:border-zinc-800 text-xs text-zinc-500 dark:text-zinc-400">
+                <span>
+                  Page {page} of {totalPages}
+                </span>
+                <div className="flex items-center gap-1">
                   <button
-                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                    className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page <= 1}
+                    className="p-1.5 rounded-md border border-zinc-200 dark:border-zinc-800 disabled:opacity-40 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
                   >
-                    <ChevronLeft size={16} />
+                    <ChevronLeft className="w-4 h-4" />
                   </button>
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const p = Math.max(1, Math.min(page - 2, totalPages - 4)) + i
-                    return (
-                      <button
-                        key={p}
-                        onClick={() => setPage(p)}
-                        className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${
-                          p === page
-                            ? 'bg-indigo-600 text-white shadow-sm'
-                            : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    )
-                  })}
                   <button
-                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                    disabled={page === totalPages}
-                    className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages}
+                    className="p-1.5 rounded-md border border-zinc-200 dark:border-zinc-800 disabled:opacity-40 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
                   >
-                    <ChevronRight size={16} />
+                    <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>

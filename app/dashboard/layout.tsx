@@ -6,12 +6,12 @@ import { ReactNode } from 'react'
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex bg-gray-100 dark:bg-slate-950 min-h-screen text-gray-900 dark:text-slate-100 transition-colors">
+    <div className="min-h-screen flex bg-zinc-50/70 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition-colors">
       <Sidebar />
-      {/* Desktop: offset by sidebar width. Mobile: no offset (sidebar is overlay) */}
-      <div className="flex-1 lg:ml-64 min-h-screen">
+      {/* Desktop: offset by sidebar width (64 / 16rem). Mobile: full width */}
+      <div className="flex-1 lg:ml-64 min-h-screen flex flex-col">
         <Header />
-        <main className="pt-24 px-4 md:px-6 pb-8">
+        <main className="flex-1 pt-20 px-4 sm:px-6 lg:px-8 pb-12 max-w-7xl w-full mx-auto space-y-6">
           <NotificationProvider />
           <DueNotificationBanner />
           {children}
@@ -20,4 +20,3 @@ export default function Layout({ children }: { children: ReactNode }) {
     </div>
   )
 }
-

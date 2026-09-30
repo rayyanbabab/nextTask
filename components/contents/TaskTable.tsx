@@ -2,9 +2,22 @@
 
 import { useState, useMemo } from 'react'
 import {
-  LayoutGrid, Table as TableIcon, SquarePen, Trash2, MoreHorizontal,
-  Calendar, Folder, Clock, CheckCircle2, XCircle, Eye, Search,
-  ChevronDown, X, Filter, ArrowUpDown, AlertTriangle, Download
+  LayoutGrid,
+  Table as TableIcon,
+  SquarePen,
+  Trash2,
+  Calendar,
+  Folder,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Eye,
+  Search as SearchIcon,
+  X,
+  Filter,
+  ArrowUpDown,
+  AlertCircle,
+  Download,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import clsx from 'clsx'
@@ -29,16 +42,29 @@ type Task = {
 type Props = { tasks: Task[] }
 
 const statusConfig = {
-  PROCESS: { label: 'In Progress', icon: Clock, bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', badge: 'bg-amber-100 text-amber-700' },
-  SUCCESS: { label: 'Completed', icon: CheckCircle2, bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', badge: 'bg-emerald-100 text-emerald-700' },
-  FAILED: { label: 'Failed', icon: XCircle, bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', badge: 'bg-rose-100 text-rose-700' },
+  PROCESS: {
+    label: 'In Progress',
+    icon: Clock,
+    cls: 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/60',
+  },
+  SUCCESS: {
+    label: 'Completed',
+    icon: CheckCircle2,
+    cls: 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/60',
+  },
+  FAILED: {
+    label: 'Failed',
+    icon: XCircle,
+    cls: 'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/60',
+  },
 }
 
 function isOverdue(dueDate: string, status: string) {
-  return status === 'PROCESS' && new Date(dueDate) < new Date()
+  return status === 'PROCESS' && dueDate ? new Date(dueDate) < new Date() : false
 }
 
 function getDateFilter(task: Task, filter: string) {
+  if (!task.dueDate) return filter === 'ALL'
   const due = new Date(task.dueDate)
   const now = new Date()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -70,22 +96,32 @@ export default function TaskTable({ tasks }: Props) {
   const handleBulkDelete = async () => {
     if (selectedTasks.length === 0) return
     if (!confirm(`Delete ${selectedTasks.length} selected tasks?`)) return
-    await Promise.all(selectedTasks.map(id => fetch(`/api/tasks/${id}`, { method: 'DELETE' })))
+    await Promise.all(
+      selectedTasks.map((id) => fetch(`/api/tasks/${id}`, { method: 'DELETE' }))
+    )
     setSelectedTasks([])
     router.refresh()
   }
 
   const toggleSelectAll = () => {
-    setSelectedTasks(selectedTasks.length === tasks.length ? [] : tasks.map(t => t.id))
+    setSelectedTasks(
+      selectedTasks.length === filteredSorted.length ? [] : filteredSorted.map((t) => t.id)
+    )
   }
 
   const toggleSelectTask = (id: number) => {
-    setSelectedTasks(prev => prev.includes(id) ? prev.filter(taskId => taskId !== id) : [...prev, id])
+    setSelectedTasks((prev) =>
+      prev.includes(id) ? prev.filter((taskId) => taskId !== id) : [...prev, id]
+    )
   }
 
   const handleSort = (field: keyof Task) => {
-    if (sortField === field) setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
-    else { setSortField(field); setSortDirection('asc') }
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortField(field)
+      setSortDirection('asc')
+    }
   }
 
   const activeFiltersCount = [
@@ -95,134 +131,169 @@ export default function TaskTable({ tasks }: Props) {
   ].filter(Boolean).length
 
   const filteredSorted = useMemo(() => {
-    let result = tasks.filter(task => {
+    const result = tasks.filter((task) => {
       const matchSearch =
         task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         task.category?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchPriority = filterPriority === 'ALL' || task.priority === filterPriority
+      const matchPriority =
+        filterPriority === 'ALL' || task.priority === filterPriority
       const matchDate = filterDate === 'ALL' || getDateFilter(task, filterDate)
       return matchSearch && matchPriority && matchDate
     })
+
     return [...result].sort((a, b) => {
       const aValue = a[sortField]
       const bValue = b[sortField]
       if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortDirection === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
+        return sortDirection === 'asc'
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue)
       }
       return 0
     })
   }, [tasks, searchTerm, filterPriority, filterDate, sortField, sortDirection])
 
-  const clearFilters = () => { setFilterPriority('ALL'); setFilterDate('ALL'); setSearchTerm('') }
+  const clearFilters = () => {
+    setFilterPriority('ALL')
+    setFilterDate('ALL')
+    setSearchTerm('')
+  }
 
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
+      {/* Primary Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        {/* Search */}
+        {/* Search Input */}
         <div className="flex-1 max-w-md relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 w-4 h-4 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search tasks..."
+            placeholder="Search tasks by title, category, or notes..."
             value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full h-9 pl-9 pr-8 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 focus:ring-2 focus:ring-zinc-950/5 dark:focus:ring-zinc-100/10 transition-all"
           />
           {searchTerm && (
-            <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+            >
               <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Toolbar Controls */}
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          {/* Bulk Selection Actions */}
           {selectedTasks.length > 0 && (
-            <>
-              <span className="text-sm text-gray-500">{selectedTasks.length} selected</span>
-              <button onClick={handleBulkDelete} className="px-3 py-2 text-xs font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl border border-rose-200 transition-colors flex items-center gap-1">
-                <Trash2 className="w-3.5 h-3.5" /> Delete
+            <div className="flex items-center gap-2 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 px-2.5 py-1 rounded-lg">
+              <span className="text-xs font-semibold text-rose-700 dark:text-rose-400">
+                {selectedTasks.length} selected
+              </span>
+              <button
+                onClick={handleBulkDelete}
+                className="inline-flex items-center gap-1 text-xs font-medium text-rose-700 dark:text-rose-300 hover:underline cursor-pointer"
+              >
+                <Trash2 className="w-3 h-3" />
+                <span>Delete</span>
               </button>
-              <div className="w-px h-5 bg-gray-200" />
-            </>
+            </div>
           )}
 
-          {/* Filter toggle */}
+          {/* Filter Toggle */}
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={clsx(
-              'flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl border transition-colors',
+              'inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border text-xs font-medium transition-colors cursor-pointer select-none',
               showFilters || activeFiltersCount > 0
-                ? 'bg-blue-50 text-blue-700 border-blue-200'
-                : 'text-gray-600 border-gray-200 hover:bg-gray-50'
+                ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950 border-transparent shadow-xs'
+                : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800'
             )}
           >
             <Filter className="w-3.5 h-3.5" />
-            Filters
+            <span>Filters</span>
             {activeFiltersCount > 0 && (
-              <span className="w-4 h-4 bg-blue-600 text-white rounded-full text-[10px] flex items-center justify-center font-bold">
+              <span className="w-4 h-4 rounded-full bg-blue-600 text-white text-[10px] flex items-center justify-center font-bold">
                 {activeFiltersCount}
               </span>
             )}
           </button>
 
-          {/* View toggle */}
-          <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-xl">
+          {/* View Mode Toggle */}
+          <div className="flex items-center p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
             <button
               onClick={() => setMode('grid')}
-              className={clsx('p-1.5 rounded-lg transition-all', mode === 'grid' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700')}
+              title="Grid view"
+              className={clsx(
+                'p-1.5 rounded-md transition-all cursor-pointer',
+                mode === 'grid'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
+                  : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+              )}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setMode('table')}
-              className={clsx('p-1.5 rounded-lg transition-all', mode === 'table' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700')}
+              title="Table view"
+              className={clsx(
+                'p-1.5 rounded-md transition-all cursor-pointer',
+                mode === 'table'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
+                  : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+              )}
             >
               <TableIcon className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Export CSV button */}
+          {/* Export to CSV */}
           <button
-            onClick={() => exportTasksToCsv(filteredSorted, 'tasks-export.csv')}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-            title="Export tasks to CSV"
+            onClick={() => exportTasksToCsv(filteredSorted, 'nexttask-export.csv')}
+            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-xs font-medium transition cursor-pointer"
+            title="Export CSV"
           >
-            <Download className="w-3.5 h-3.5 text-gray-500" />
+            <Download className="w-3.5 h-3.5 text-zinc-400" />
             <span className="hidden sm:inline">Export</span>
           </button>
         </div>
       </div>
 
-      {/* Filter Panel */}
+      {/* Filter Drawer / Panel */}
       {showFilters && (
-        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-3">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-xl p-4 space-y-3.5 shadow-xs transition-colors">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Filters</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+              Filter By
+            </span>
             {activeFiltersCount > 0 && (
-              <button onClick={clearFilters} className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+              <button
+                onClick={clearFilters}
+                className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium inline-flex items-center gap-1 cursor-pointer"
+              >
                 <X className="w-3 h-3" /> Clear all
               </button>
             )}
           </div>
-          <div className="flex flex-wrap gap-4">
-            {/* Priority filter */}
+
+          <div className="flex flex-wrap gap-6">
+            {/* Priority */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-500">Priority</label>
-              <div className="flex gap-1.5">
-                {['ALL', 'HIGH', 'MEDIUM', 'LOW'].map(p => (
+              <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                Priority
+              </label>
+              <div className="flex items-center gap-1">
+                {['ALL', 'HIGH', 'MEDIUM', 'LOW'].map((p) => (
                   <button
                     key={p}
                     onClick={() => setFilterPriority(p)}
                     className={clsx(
-                      'px-2.5 py-1 text-xs font-semibold rounded-lg border transition-colors',
+                      'px-2.5 py-1 text-xs font-medium rounded-md border transition cursor-pointer',
                       filterPriority === p
-                        ? p === 'HIGH' ? 'bg-rose-500 text-white border-rose-500'
-                          : p === 'MEDIUM' ? 'bg-amber-500 text-white border-amber-500'
-                          : p === 'LOW' ? 'bg-green-500 text-white border-green-500'
-                          : 'bg-gray-800 text-white border-gray-800'
-                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                        ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950 border-transparent shadow-xs'
+                        : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800'
                     )}
                   >
                     {p}
@@ -231,24 +302,26 @@ export default function TaskTable({ tasks }: Props) {
               </div>
             </div>
 
-            {/* Due date filter */}
+            {/* Due Date */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-500">Due Date</label>
-              <div className="flex gap-1.5">
+              <label className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                Due Date
+              </label>
+              <div className="flex items-center gap-1">
                 {[
                   { key: 'ALL', label: 'All' },
-                  { key: 'today', label: 'Today' },
+                  { key: 'today', label: 'Due Today' },
                   { key: 'week', label: 'This Week' },
-                  { key: 'overdue', label: '⚠ Overdue' },
-                ].map(opt => (
+                  { key: 'overdue', label: 'Overdue' },
+                ].map((opt) => (
                   <button
                     key={opt.key}
                     onClick={() => setFilterDate(opt.key)}
                     className={clsx(
-                      'px-2.5 py-1 text-xs font-semibold rounded-lg border transition-colors',
+                      'px-2.5 py-1 text-xs font-medium rounded-md border transition cursor-pointer',
                       filterDate === opt.key
-                        ? opt.key === 'overdue' ? 'bg-rose-500 text-white border-rose-500' : 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                        ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950 border-transparent shadow-xs'
+                        : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800'
                     )}
                   >
                     {opt.label}
@@ -260,39 +333,25 @@ export default function TaskTable({ tasks }: Props) {
         </div>
       )}
 
-      {/* Active Filter Chips */}
-      {activeFiltersCount > 0 && !showFilters && (
-        <div className="flex flex-wrap gap-2">
-          {filterPriority !== 'ALL' && (
-            <span className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-full">
-              Priority: {filterPriority}
-              <button onClick={() => setFilterPriority('ALL')}><X className="w-3 h-3" /></button>
-            </span>
-          )}
-          {filterDate !== 'ALL' && (
-            <span className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-full">
-              Due: {filterDate}
-              <button onClick={() => setFilterDate('ALL')}><X className="w-3 h-3" /></button>
-            </span>
-          )}
-          {searchTerm && (
-            <span className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-full">
-              Search: "{searchTerm}"
-              <button onClick={() => setSearchTerm('')}><X className="w-3 h-3" /></button>
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* Results summary */}
-      <div className="flex items-center justify-between text-xs text-gray-400">
-        <span>Showing <span className="font-semibold text-gray-700">{filteredSorted.length}</span> of <span className="font-semibold text-gray-700">{tasks.length}</span> tasks</span>
+      {/* Results Count Line */}
+      <div className="flex items-center justify-between text-xs text-zinc-400 dark:text-zinc-500 px-1">
+        <span>
+          Showing{' '}
+          <strong className="text-zinc-700 dark:text-zinc-300">
+            {filteredSorted.length}
+          </strong>{' '}
+          of{' '}
+          <strong className="text-zinc-700 dark:text-zinc-300">
+            {tasks.length}
+          </strong>{' '}
+          tasks
+        </span>
       </div>
 
-      {/* GRID MODE */}
+      {/* Grid Mode */}
       {mode === 'grid' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredSorted.map(task => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+          {filteredSorted.map((task) => (
             <TaskCard
               key={task.id}
               {...task}
@@ -301,16 +360,24 @@ export default function TaskTable({ tasks }: Props) {
               onToggleSelect={() => toggleSelectTask(task.id)}
             />
           ))}
+
           {filteredSorted.length === 0 && (
-            <div className="col-span-full text-center py-16">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Folder className="w-7 h-7 text-gray-400" />
+            <div className="col-span-full text-center py-16 bg-white dark:bg-zinc-900/60 rounded-xl border border-zinc-200/80 dark:border-zinc-800 p-8">
+              <div className="w-12 h-12 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-3 text-zinc-400">
+                <Folder className="w-6 h-6" />
               </div>
-              <h3 className="text-base font-semibold text-gray-900 mb-1">No tasks found</h3>
-              <p className="text-sm text-gray-400">Try adjusting your search or filters</p>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                No tasks found
+              </h3>
+              <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
+                Try clearing your search query or adjusting active filters.
+              </p>
               {activeFiltersCount > 0 && (
-                <button onClick={clearFilters} className="mt-3 text-blue-600 text-sm font-medium hover:text-blue-700">
-                  Clear all filters
+                <button
+                  onClick={clearFilters}
+                  className="mt-3 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                >
+                  Reset all filters
                 </button>
               )}
             </div>
@@ -318,15 +385,23 @@ export default function TaskTable({ tasks }: Props) {
         </div>
       )}
 
-      {/* TABLE MODE */}
+      {/* Table Mode */}
       {mode === 'table' && (
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-left text-xs">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
+                <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-800/40 text-zinc-500 dark:text-zinc-400 uppercase tracking-wider font-semibold">
                   <th className="px-4 py-3 w-10">
-                    <input type="checkbox" checked={selectedTasks.length === tasks.length && tasks.length > 0} onChange={toggleSelectAll} className="rounded border-gray-300 text-blue-600" />
+                    <input
+                      type="checkbox"
+                      checked={
+                        selectedTasks.length === filteredSorted.length &&
+                        filteredSorted.length > 0
+                      }
+                      onChange={toggleSelectAll}
+                      className="rounded border-zinc-300 dark:border-zinc-700 text-blue-600 focus:ring-0 cursor-pointer"
+                    />
                   </th>
                   {[
                     { key: 'title', label: 'Title' },
@@ -334,93 +409,175 @@ export default function TaskTable({ tasks }: Props) {
                     { key: 'status', label: 'Status' },
                     { key: 'priority', label: 'Priority' },
                     { key: 'dueDate', label: 'Due Date' },
-                  ].map(col => (
-                    <th key={col.key} className="px-4 py-3 text-left">
-                      <button onClick={() => handleSort(col.key as keyof Task)} className="flex items-center gap-1 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-700">
-                        {col.label} <ArrowUpDown className="w-3 h-3" />
+                  ].map((col) => (
+                    <th key={col.key} className="px-4 py-3">
+                      <button
+                        onClick={() => handleSort(col.key as keyof Task)}
+                        className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer"
+                      >
+                        <span>{col.label}</span>
+                        <ArrowUpDown className="w-3 h-3" />
                       </button>
                     </th>
                   ))}
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filteredSorted.map(task => {
-                  const status = statusConfig[task.status]
-                  const StatusIcon = status.icon
+              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/70">
+                {filteredSorted.map((task) => {
+                  const s = statusConfig[task.status] || statusConfig.PROCESS
+                  const StatusIcon = s.icon
                   const overdue = isOverdue(task.dueDate, task.status)
-                  const completedSubs = task.subtasks?.filter(s => s.completed).length ?? 0
+                  const completedSubs =
+                    task.subtasks?.filter((sub) => sub.completed).length ?? 0
                   const totalSubs = task.subtasks?.length ?? 0
+
                   return (
-                    <tr key={task.id} className={clsx('hover:bg-gray-50 transition-colors group', selectedTasks.includes(task.id) && 'bg-blue-50/40')}>
+                    <tr
+                      key={task.id}
+                      className={clsx(
+                        'hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors group',
+                        selectedTasks.includes(task.id) &&
+                          'bg-blue-50/50 dark:bg-blue-950/20'
+                      )}
+                    >
                       <td className="px-4 py-3">
-                        <input type="checkbox" checked={selectedTasks.includes(task.id)} onChange={() => toggleSelectTask(task.id)} className="rounded border-gray-300 text-blue-600" />
+                        <input
+                          type="checkbox"
+                          checked={selectedTasks.includes(task.id)}
+                          onChange={() => toggleSelectTask(task.id)}
+                          className="rounded border-zinc-300 dark:border-zinc-700 text-blue-600 focus:ring-0 cursor-pointer"
+                        />
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">{task.title}</div>
+
+                      {/* Title */}
+                      <td className="px-4 py-3 max-w-xs sm:max-w-md">
+                        <div
+                          className="font-medium text-zinc-900 dark:text-zinc-100 truncate cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition"
+                          onClick={() => router.push(`/dashboard/tasks/${task.id}`)}
+                        >
+                          {task.title}
+                        </div>
                         {totalSubs > 0 && (
-                          <div className="flex items-center gap-1.5 mt-1">
-                            <div className="h-1 w-16 bg-gray-200 rounded-full overflow-hidden">
-                              <div className="h-full bg-blue-500 rounded-full" style={{ width: `${(completedSubs / totalSubs) * 100}%` }} />
+                          <div className="flex items-center gap-1.5 mt-1 text-[11px] text-zinc-400">
+                            <div className="h-1 w-14 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-blue-500 rounded-full"
+                                style={{
+                                  width: `${(completedSubs / totalSubs) * 100}%`,
+                                }}
+                              />
                             </div>
-                            <span className="text-xs text-gray-400">{completedSubs}/{totalSubs}</span>
-                          </div>
-                        )}
-                        {task.labels && task.labels.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {task.labels.slice(0, 2).map(({ label }) => (
-                              <span key={label.name} className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ backgroundColor: label.color + '22', color: label.color }}>
-                                {label.name}
-                              </span>
-                            ))}
+                            <span>
+                              {completedSubs}/{totalSubs}
+                            </span>
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-500">
+
+                      {/* Category */}
+                      <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
                         {task.category ? (
-                          <div className="flex items-center gap-1.5">
-                            <Folder className="w-3.5 h-3.5 text-gray-400" />
+                          <span className="inline-flex items-center gap-1">
+                            <Folder className="w-3 h-3 text-zinc-400" />
                             <span>{task.category.name}</span>
-                          </div>
-                        ) : <span className="text-gray-300">—</span>}
+                          </span>
+                        ) : (
+                          <span className="text-zinc-300 dark:text-zinc-600">—</span>
+                        )}
                       </td>
+
+                      {/* Status */}
                       <td className="px-4 py-3">
-                        <div className={clsx('inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium', status.badge)}>
-                          <StatusIcon className="w-3 h-3" /> {status.label}
+                        <span
+                          className={clsx(
+                            'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border',
+                            s.cls
+                          )}
+                        >
+                          <StatusIcon className="w-3 h-3" />
+                          <span>{s.label}</span>
+                        </span>
+                      </td>
+
+                      {/* Priority */}
+                      <td className="px-4 py-3">
+                        <span
+                          className={clsx(
+                            'inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium border',
+                            task.priority === 'HIGH' &&
+                              'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/60',
+                            task.priority === 'MEDIUM' &&
+                              'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/60',
+                            task.priority === 'LOW' &&
+                              'bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700'
+                          )}
+                        >
+                          {task.priority}
+                        </span>
+                      </td>
+
+                      {/* Due Date */}
+                      <td className="px-4 py-3">
+                        <div
+                          className={clsx(
+                            'inline-flex items-center gap-1 text-[11px]',
+                            overdue
+                              ? 'text-rose-600 dark:text-rose-400 font-semibold'
+                              : 'text-zinc-500 dark:text-zinc-400'
+                          )}
+                        >
+                          {overdue && <AlertCircle className="w-3 h-3" />}
+                          <Calendar className="w-3 h-3 text-zinc-400" />
+                          <span>
+                            {task.dueDate
+                              ? new Date(task.dueDate).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                })
+                              : '—'}
+                          </span>
                         </div>
                       </td>
-                      <td className="px-4 py-3">
-                        <span className={clsx(
-                          'text-xs font-semibold px-2 py-0.5 rounded-full',
-                          task.priority === 'HIGH' ? 'bg-rose-100 text-rose-700' :
-                          task.priority === 'MEDIUM' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
-                        )}>{task.priority}</span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className={clsx('flex items-center gap-1.5 text-xs', overdue ? 'text-rose-600 font-medium' : 'text-gray-500')}>
-                          {overdue && <AlertTriangle className="w-3 h-3" />}
-                          <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                          {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
+
+                      {/* Actions */}
+                      <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <button onClick={() => router.push(`/dashboard/tasks/${task.id}`)} className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="View"><Eye className="w-4 h-4" /></button>
-                          <button onClick={() => router.push(`/dashboard/tasks/edit/${task.id}`)} className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit"><SquarePen className="w-4 h-4" /></button>
-                          <button onClick={() => handleDelete(task.id)} className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                          <button
+                            onClick={() =>
+                              router.push(`/dashboard/tasks/${task.id}`)
+                            }
+                            className="p-1.5 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition"
+                            title="View"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() =>
+                              router.push(`/dashboard/tasks/edit/${task.id}`)
+                            }
+                            className="p-1.5 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition"
+                            title="Edit"
+                          >
+                            <SquarePen className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(task.id)}
+                            className="p-1.5 text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </td>
                     </tr>
                   )
                 })}
+
                 {filteredSorted.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-12 text-center">
-                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Folder className="w-5 h-5 text-gray-400" />
-                      </div>
-                      <p className="text-sm font-medium text-gray-900">No tasks found</p>
-                      <p className="text-xs text-gray-400 mt-1">Try adjusting your search or filters</p>
+                    <td colSpan={7} className="px-4 py-12 text-center text-zinc-400">
+                      No tasks found matching your filter criteria.
                     </td>
                   </tr>
                 )}

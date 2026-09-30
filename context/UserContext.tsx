@@ -3,10 +3,12 @@
 
 import { useEffect, createContext, useContext, useState, ReactNode } from 'react'
 
-type User = {
-  id: string
+export type User = {
+  id: string | number
   name: string
   email: string
+  role?: string
+  createdAt?: string
 }
 
 type UserContextType = {

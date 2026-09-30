@@ -25,9 +25,8 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/dashboard', req.url))
     }
 
-    if (req.nextUrl.pathname.startsWith('/dashboard') && role === 'ADMIN') {
-      console.log("🚫 Admin trying to access user dashboard, redirecting to /admin")
-      return NextResponse.redirect(new URL('/admin', req.url))
+    if (req.nextUrl.pathname === '/admin') {
+      return NextResponse.redirect(new URL('/admin/dashboard', req.url))
     }
 
     return NextResponse.next()

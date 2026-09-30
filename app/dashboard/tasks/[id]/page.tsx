@@ -2,12 +2,27 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import {
-  ArrowLeft, Calendar, Folder, Clock, CheckCircle2, XCircle,
-  Trash2, SquarePen, Plus, X, Tag, Flag,
-  AlertTriangle, ChevronDown, MessageSquare, Send
+  ArrowLeft,
+  Calendar,
+  Folder,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Trash2,
+  SquarePen,
+  Plus,
+  X,
+  Flag,
+  AlertCircle,
+  ChevronDown,
+  MessageSquare,
+  Send,
+  Check,
 } from 'lucide-react'
 import clsx from 'clsx'
+import { Button } from '@/components/ui/Button'
 
 type Subtask = { id: number; title: string; completed: boolean }
 type Label = { label: { name: string; color: string } }
@@ -33,14 +48,39 @@ type Task = {
 type AvailableLabel = { id: number; name: string; color: string }
 
 const statusConfig = {
-  PROCESS: { label: 'In Progress', icon: Clock, cls: 'bg-amber-100 text-amber-700 border-amber-200' },
-  SUCCESS: { label: 'Completed', icon: CheckCircle2, cls: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
-  FAILED: { label: 'Failed', icon: XCircle, cls: 'bg-rose-100 text-rose-700 border-rose-200' },
+  PROCESS: {
+    label: 'In Progress',
+    icon: Clock,
+    cls: 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/60',
+  },
+  SUCCESS: {
+    label: 'Completed',
+    icon: CheckCircle2,
+    cls: 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/60',
+  },
+  FAILED: {
+    label: 'Failed',
+    icon: XCircle,
+    cls: 'bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/60',
+  },
 }
+
 const priorityConfig = {
-  HIGH: { label: 'High', cls: 'bg-rose-100 text-rose-700', dot: 'bg-rose-500' },
-  MEDIUM: { label: 'Medium', cls: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' },
-  LOW: { label: 'Low', cls: 'bg-green-100 text-green-700', dot: 'bg-green-500' },
+  HIGH: {
+    label: 'High',
+    cls: 'text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900/60',
+    dot: 'bg-rose-500',
+  },
+  MEDIUM: {
+    label: 'Medium',
+    cls: 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900/60',
+    dot: 'bg-amber-500',
+  },
+  LOW: {
+    label: 'Low',
+    cls: 'text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700',
+    dot: 'bg-emerald-500',
+  },
 }
 
 export default function TaskDetailPage() {
@@ -59,17 +99,23 @@ export default function TaskDetailPage() {
   const [postingComment, setPostingComment] = useState(false)
 
   const fetchTask = useCallback(async () => {
-    const res = await fetch(`/api/tasks/${id}`)
-    const data = await res.json()
-    setTask(data.task)
-    setLoading(false)
+    try {
+      const res = await fetch(`/api/tasks/${id}`)
+      const data = await res.json()
+      setTask(data.task)
+    } finally {
+      setLoading(false)
+    }
   }, [id])
 
   useEffect(() => {
     fetchTask()
-    fetch('/api/labels').then(r => r.json()).then(d => setAvailableLabels(d.labels || []))
-    // fetch comments
-    fetch(`/api/tasks/${id}/comments`).then(r => r.json()).then(d => setComments(d.comments || []))
+    fetch('/api/labels')
+      .then((r) => r.json())
+      .then((d) => setAvailableLabels(d.labels || []))
+    fetch(`/api/tasks/${id}/comments`)
+      .then((r) => r.json())
+      .then((d) => setComments(d.comments || []))
   }, [fetchTask, id])
 
   const toggleSubtask = async (subtaskId: number, completed: boolean) => {
@@ -78,10 +124,16 @@ export default function TaskDetailPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ completed: !completed }),
     })
-    setTask(prev => prev ? {
-      ...prev,
-      subtasks: prev.subtasks.map(s => s.id === subtaskId ? { ...s, completed: !completed } : s)
-    } : prev)
+    setTask((prev) =>
+      prev
+        ? {
+            ...prev,
+            subtasks: prev.subtasks.map((s) =>
+              s.id === subtaskId ? { ...s, completed: !completed } : s
+            ),
+          }
+        : prev
+    )
   }
 
   const addSubtask = async () => {
@@ -93,14 +145,23 @@ export default function TaskDetailPage() {
       body: JSON.stringify({ title: newSubtask }),
     })
     const data = await res.json()
-    setTask(prev => prev ? { ...prev, subtasks: [...prev.subtasks, data.subtask] } : prev)
+    setTask((prev) =>
+      prev ? { ...prev, subtasks: [...prev.subtasks, data.subtask] } : prev
+    )
     setNewSubtask('')
     setAddingSubtask(false)
   }
 
   const deleteSubtask = async (subtaskId: number) => {
     await fetch(`/api/tasks/${id}/subtasks/${subtaskId}`, { method: 'DELETE' })
-    setTask(prev => prev ? { ...prev, subtasks: prev.subtasks.filter(s => s.id !== subtaskId) } : prev)
+    setTask((prev) =>
+      prev
+        ? {
+            ...prev,
+            subtasks: prev.subtasks.filter((s) => s.id !== subtaskId),
+          }
+        : prev
+    )
   }
 
   const changeStatus = async (status: 'PROCESS' | 'SUCCESS' | 'FAILED') => {
@@ -109,7 +170,7 @@ export default function TaskDetailPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     })
-    setTask(prev => prev ? { ...prev, status } : prev)
+    setTask((prev) => (prev ? { ...prev, status } : prev))
     setShowStatusMenu(false)
   }
 
@@ -123,7 +184,7 @@ export default function TaskDetailPage() {
   }
 
   const deleteTask = async () => {
-    if (!confirm('Delete this task?')) return
+    if (!confirm('Permanently delete this task?')) return
     await fetch(`/api/tasks/${id}`, { method: 'DELETE' })
     router.push('/dashboard/tasks')
   }
@@ -138,7 +199,7 @@ export default function TaskDetailPage() {
     })
     const data = await res.json()
     if (res.ok) {
-      setComments(prev => [...prev, data.comment])
+      setComments((prev) => [...prev, data.comment])
       setCommentText('')
     }
     setPostingComment(false)
@@ -146,7 +207,7 @@ export default function TaskDetailPage() {
 
   const deleteComment = async (commentId: number) => {
     await fetch(`/api/tasks/${id}/comments/${commentId}`, { method: 'DELETE' })
-    setComments(prev => prev.filter(c => c.id !== commentId))
+    setComments((prev) => prev.filter((c) => c.id !== commentId))
   }
 
   function timeAgo(dateStr: string) {
@@ -154,100 +215,142 @@ export default function TaskDetailPage() {
     if (seconds < 60) return 'just now'
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
     if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
-    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    })
   }
 
-  if (loading) return (
-    <div className="max-w-3xl mx-auto space-y-4 animate-pulse">
-      <div className="h-8 bg-gray-200 rounded-lg w-1/3" />
-      <div className="bg-white rounded-2xl p-6 space-y-4">
-        <div className="h-6 bg-gray-200 rounded w-3/4" />
-        <div className="h-4 bg-gray-100 rounded w-full" />
-        <div className="h-4 bg-gray-100 rounded w-2/3" />
+  if (loading) {
+    return (
+      <div className="max-w-3xl mx-auto space-y-4 animate-pulse">
+        <div className="h-6 bg-zinc-200 dark:bg-zinc-800 rounded w-1/4" />
+        <div className="bg-white dark:bg-zinc-900 rounded-xl p-6 space-y-4 border border-zinc-200 dark:border-zinc-800">
+          <div className="h-7 bg-zinc-200 dark:bg-zinc-800 rounded w-3/4" />
+          <div className="h-4 bg-zinc-100 dark:bg-zinc-800/60 rounded w-full" />
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
 
-  if (!task) return (
-    <div className="text-center py-20">
-      <p className="text-gray-500">Task not found</p>
-      <button onClick={() => router.back()} className="mt-4 text-blue-600 text-sm">Go back</button>
-    </div>
-  )
+  if (!task) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-zinc-500">Task record not found</p>
+        <Link
+          href="/dashboard/tasks"
+          className="mt-3 inline-block text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+        >
+          Return to Tasks
+        </Link>
+      </div>
+    )
+  }
 
-  const completedCount = task.subtasks.filter(s => s.completed).length
+  const completedCount = task.subtasks.filter((s) => s.completed).length
   const totalSubtasks = task.subtasks.length
-  const progress = totalSubtasks > 0 ? Math.round((completedCount / totalSubtasks) * 100) : 0
-  const isOverdue = task.status === 'PROCESS' && new Date(task.dueDate) < new Date()
-  const sConfig = statusConfig[task.status]
+  const progress =
+    totalSubtasks > 0 ? Math.round((completedCount / totalSubtasks) * 100) : 0
+  const isOverdue =
+    task.status === 'PROCESS' && task.dueDate
+      ? new Date(task.dueDate) < new Date()
+      : false
+  const sConfig = statusConfig[task.status] || statusConfig.PROCESS
   const SIcon = sConfig.icon
-  const pConfig = priorityConfig[task.priority]
-  const attachedLabelIds = task.labels.map(l => availableLabels.find(al => al.name === l.label.name)?.id)
+  const pConfig = priorityConfig[task.priority] || priorityConfig.MEDIUM
 
   return (
-    <div className="max-w-3xl mx-auto space-y-5">
-      {/* Back + Actions */}
+    <div className="max-w-3xl mx-auto space-y-6">
+      {/* Top back navigation + Actions */}
       <div className="flex items-center justify-between">
-        <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors text-sm font-medium">
-          <ArrowLeft className="w-4 h-4" /> Back
-        </button>
+        <Link
+          href="/dashboard/tasks"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Tasks</span>
+        </Link>
+
         <div className="flex items-center gap-2">
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => router.push(`/dashboard/tasks/edit/${id}`)}
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
           >
-            <SquarePen className="w-4 h-4" /> Edit
-          </button>
-          <button
+            <SquarePen className="w-3.5 h-3.5 mr-1" />
+            <span>Edit</span>
+          </Button>
+
+          <Button
+            variant="subtleDestructive"
+            size="sm"
             onClick={deleteTask}
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-rose-600 bg-white border border-rose-200 rounded-xl hover:bg-rose-50 transition-colors"
           >
-            <Trash2 className="w-4 h-4" /> Delete
-          </button>
+            <Trash2 className="w-3.5 h-3.5 mr-1" />
+            <span>Delete</span>
+          </Button>
         </div>
       </div>
 
-      {/* Main Card */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
-        {/* Title + Status */}
-        <div className="space-y-3">
-          {isOverdue && (
-            <div className="flex items-center gap-2 text-rose-600 text-sm font-medium bg-rose-50 px-3 py-2 rounded-lg border border-rose-100">
-              <AlertTriangle className="w-4 h-4" /> This task is overdue!
-            </div>
-          )}
-          <h1 className="text-2xl font-bold text-gray-900">{task.title}</h1>
-          {task.description && (
-            <p className="text-gray-500 text-sm leading-relaxed">{task.description}</p>
+      {/* Main Task Card */}
+      <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs p-6 space-y-6 transition-colors">
+        {/* Overdue alert */}
+        {isOverdue && (
+          <div className="flex items-center gap-2 text-rose-700 dark:text-rose-400 text-xs font-medium bg-rose-50 dark:bg-rose-950/40 px-3.5 py-2 rounded-lg border border-rose-200 dark:border-rose-900/60">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>This task has passed its scheduled due date and remains incomplete.</span>
+          </div>
+        )}
+
+        {/* Title & Description */}
+        <div className="space-y-2">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            {task.title}
+          </h1>
+          {task.description ? (
+            <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed whitespace-pre-wrap">
+              {task.description}
+            </p>
+          ) : (
+            <p className="text-xs text-zinc-400 italic">No description provided.</p>
           )}
         </div>
 
-        {/* Meta Row */}
-        <div className="flex flex-wrap gap-3">
+        {/* Properties metadata bar */}
+        <div className="flex flex-wrap items-center gap-2.5 pt-1">
           {/* Status dropdown */}
           <div className="relative">
             <button
               onClick={() => setShowStatusMenu(!showStatusMenu)}
-              className={clsx('flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-colors', sConfig.cls)}
+              className={clsx(
+                'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition cursor-pointer select-none',
+                sConfig.cls
+              )}
             >
               <SIcon className="w-3.5 h-3.5" />
-              {sConfig.label}
-              <ChevronDown className="w-3 h-3 ml-0.5" />
+              <span>{sConfig.label}</span>
+              <ChevronDown className="w-3 h-3 ml-0.5 opacity-60" />
             </button>
+
             {showStatusMenu && (
-              <div className="absolute left-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 overflow-hidden min-w-[160px]">
+              <div className="absolute left-0 top-full mt-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg z-20 overflow-hidden min-w-[150px] p-1 space-y-0.5">
                 {Object.entries(statusConfig).map(([key, cfg]) => {
                   const Icon = cfg.icon
                   return (
                     <button
                       key={key}
-                      onClick={() => changeStatus(key as 'PROCESS' | 'SUCCESS' | 'FAILED')}
+                      onClick={() =>
+                        changeStatus(key as 'PROCESS' | 'SUCCESS' | 'FAILED')
+                      }
                       className={clsx(
-                        'flex items-center gap-2 w-full px-4 py-2.5 text-xs font-medium transition-colors hover:bg-gray-50',
-                        task.status === key ? 'text-blue-600' : 'text-gray-700'
+                        'flex items-center gap-2 w-full px-3 py-1.5 rounded-md text-xs font-medium transition cursor-pointer text-left',
+                        task.status === key
+                          ? 'bg-zinc-100 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100'
+                          : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-700/60 hover:text-zinc-900 dark:hover:text-zinc-100'
                       )}
                     >
-                      <Icon className="w-3.5 h-3.5" /> {cfg.label}
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{cfg.label}</span>
                     </button>
                   )
                 })}
@@ -256,135 +359,169 @@ export default function TaskDetailPage() {
           </div>
 
           {/* Priority */}
-          <div className={clsx('flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold', pConfig.cls, 'border-transparent')}>
-            <div className={clsx('w-2 h-2 rounded-full', pConfig.dot)} />
-            {pConfig.label} Priority
+          <div
+            className={clsx(
+              'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium',
+              pConfig.cls
+            )}
+          >
+            <span className={clsx('w-1.5 h-1.5 rounded-full', pConfig.dot)} />
+            <span>{pConfig.label} Priority</span>
           </div>
 
-          {/* Due Date */}
-          <div className={clsx(
-            'flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium',
-            isOverdue ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-gray-50 text-gray-600 border-gray-200'
-          )}>
-            <Calendar className="w-3.5 h-3.5" />
-            {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          {/* Due date */}
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 text-xs font-medium text-zinc-700 dark:text-zinc-300">
+            <Calendar className="w-3.5 h-3.5 text-zinc-400" />
+            <span>
+              {task.dueDate
+                ? new Date(task.dueDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })
+                : 'No due date'}
+            </span>
           </div>
 
           {/* Category */}
           {task.category && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border bg-indigo-50 text-indigo-700 border-indigo-200 text-xs font-medium">
-              <Folder className="w-3.5 h-3.5" />
-              {task.category.name}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 text-xs font-medium text-zinc-700 dark:text-zinc-300">
+              <Folder className="w-3.5 h-3.5 text-zinc-400" />
+              <span>{task.category.name}</span>
             </div>
           )}
         </div>
 
-        {/* Labels */}
-        <div className="space-y-2">
+        {/* Labels section */}
+        <div className="space-y-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              <Tag className="w-3.5 h-3.5" /> Labels
-            </div>
+            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+              Labels
+            </span>
             <div className="relative">
               <button
                 onClick={() => setShowLabelMenu(!showLabelMenu)}
-                className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1 font-medium"
+                className="text-xs text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 font-medium cursor-pointer"
               >
-                <Plus className="w-3.5 h-3.5" /> Add label
+                <Plus className="w-3 h-3" />
+                <span>Manage labels</span>
               </button>
+
               {showLabelMenu && availableLabels.length > 0 && (
-                <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 min-w-[180px] p-2 space-y-1">
-                  {availableLabels.map(label => {
-                    const attached = task.labels.some(l => l.label.name === label.name)
+                <div className="absolute right-0 top-full mt-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg z-20 min-w-[180px] p-1 space-y-0.5">
+                  {availableLabels.map((label) => {
+                    const attached = task.labels.some(
+                      (l) => l.label.name === label.name
+                    )
                     return (
                       <button
                         key={label.id}
                         onClick={() => toggleLabel(label.id)}
-                        className="flex items-center gap-2 w-full px-3 py-2 rounded-lg hover:bg-gray-50 text-xs"
+                        className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-700/60 text-xs transition cursor-pointer"
                       >
-                        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: label.color }} />
-                        <span className="flex-1 text-left text-gray-700">{label.name}</span>
-                        {attached && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="w-2 h-2 rounded-full"
+                            style={{ backgroundColor: label.color }}
+                          />
+                          <span className="text-zinc-700 dark:text-zinc-300">
+                            {label.name}
+                          </span>
+                        </div>
+                        {attached && (
+                          <Check className="w-3.5 h-3.5 text-emerald-500" />
+                        )}
                       </button>
                     )
                   })}
-                  {availableLabels.length === 0 && (
-                    <p className="text-xs text-gray-400 px-3 py-2">No labels yet</p>
-                  )}
                 </div>
               )}
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
+
+          <div className="flex flex-wrap gap-1.5">
             {task.labels.length === 0 ? (
-              <p className="text-xs text-gray-400">No labels attached</p>
-            ) : task.labels.map(({ label }) => (
-              <span
-                key={label.name}
-                className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium"
-                style={{ backgroundColor: label.color + '22', color: label.color, border: `1px solid ${label.color}44` }}
-              >
-                {label.name}
-              </span>
-            ))}
+              <span className="text-xs text-zinc-400">No labels assigned</span>
+            ) : (
+              task.labels.map(({ label }) => (
+                <span
+                  key={label.name}
+                  className="text-xs px-2.5 py-0.5 rounded-full font-medium"
+                  style={{
+                    backgroundColor: label.color + '22',
+                    color: label.color,
+                  }}
+                >
+                  {label.name}
+                </span>
+              ))
+            )}
           </div>
         </div>
 
-        <div className="border-t border-gray-100" />
-
-        {/* Subtasks */}
-        <div className="space-y-3">
+        {/* Subtasks Section */}
+        <div className="space-y-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-gray-800">Subtasks</span>
+              <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Checklist & Subtasks
+              </span>
               {totalSubtasks > 0 && (
-                <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full">
                   {completedCount}/{totalSubtasks}
                 </span>
               )}
             </div>
             {totalSubtasks > 0 && (
-              <span className="text-xs font-bold text-blue-600">{progress}%</span>
+              <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                {progress}%
+              </span>
             )}
           </div>
 
-          {/* Progress Bar */}
+          {/* Progress track */}
           {totalSubtasks > 0 && (
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
               <div
-                className={clsx(
-                  'h-full rounded-full transition-all duration-500',
-                  progress === 100 ? 'bg-emerald-500' : 'bg-blue-500'
-                )}
+                className="h-full bg-blue-600 rounded-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>
           )}
 
-          {/* Subtask List */}
-          <div className="space-y-2">
-            {task.subtasks.map(subtask => (
-              <div key={subtask.id} className="flex items-center gap-3 py-2 px-3 rounded-xl hover:bg-gray-50 group transition-colors">
+          {/* Subtasks List */}
+          <div className="space-y-1.5">
+            {task.subtasks.map((subtask) => (
+              <div
+                key={subtask.id}
+                className="flex items-center gap-3 py-2 px-3 rounded-lg border border-zinc-200/60 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 group transition"
+              >
                 <button
+                  type="button"
                   onClick={() => toggleSubtask(subtask.id, subtask.completed)}
                   className={clsx(
-                    'w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all',
+                    'w-4 h-4 rounded border flex items-center justify-center transition cursor-pointer',
                     subtask.completed
-                      ? 'bg-emerald-500 border-emerald-500'
-                      : 'border-gray-300 hover:border-blue-400'
+                      ? 'bg-blue-600 border-blue-600 text-white'
+                      : 'border-zinc-300 dark:border-zinc-600 hover:border-zinc-400 bg-white dark:bg-zinc-800'
                   )}
                 >
-                  {subtask.completed && <CheckCircle2 className="w-3 h-3 text-white" />}
+                  {subtask.completed && <Check className="w-3 h-3 stroke-[3]" />}
                 </button>
-                <span className={clsx(
-                  'flex-1 text-sm transition-colors',
-                  subtask.completed ? 'line-through text-gray-400' : 'text-gray-700'
-                )}>
+                <span
+                  className={clsx(
+                    'flex-1 text-xs sm:text-sm transition-colors',
+                    subtask.completed
+                      ? 'line-through text-zinc-400 dark:text-zinc-500'
+                      : 'text-zinc-800 dark:text-zinc-200'
+                  )}
+                >
                   {subtask.title}
                 </span>
                 <button
                   onClick={() => deleteSubtask(subtask.id)}
-                  className="opacity-0 group-hover:opacity-100 p-1 text-gray-300 hover:text-rose-500 rounded transition-all"
+                  className="opacity-0 group-hover:opacity-100 p-1 text-zinc-400 hover:text-rose-600 rounded transition cursor-pointer"
+                  title="Remove subtask"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -392,71 +529,83 @@ export default function TaskDetailPage() {
             ))}
           </div>
 
-          {/* Add Subtask Input */}
-          <div className="flex items-center gap-2 mt-2">
+          {/* Add Subtask input */}
+          <div className="flex items-center gap-2 pt-1">
             <input
               type="text"
               value={newSubtask}
-              onChange={e => setNewSubtask(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && addSubtask()}
-              placeholder="Add a subtask... (press Enter)"
-              className="flex-1 text-sm px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              onChange={(e) => setNewSubtask(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && addSubtask()}
+              placeholder="Add a checklist item (press Enter)..."
+              className="flex-1 h-9 px-3 text-xs sm:text-sm rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
             />
-            <button
+            <Button
+              size="sm"
               onClick={addSubtask}
               disabled={addingSubtask || !newSubtask.trim()}
-              className="p-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              isLoading={addingSubtask}
             >
-              <Plus className="w-4 h-4" />
-            </button>
+              Add
+            </Button>
           </div>
         </div>
 
-        {/* Failure Reason */}
+        {/* Failure reason if applicable */}
         {task.status === 'FAILED' && task.failureReason && (
-          <div className="bg-rose-50 border border-rose-200 rounded-xl p-4">
-            <div className="flex items-center gap-2 text-rose-700 font-semibold text-sm mb-1">
-              <Flag className="w-4 h-4" /> Failure Reason
+          <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-xl p-4">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-rose-700 dark:text-rose-400 mb-1">
+              <Flag className="w-3.5 h-3.5" />
+              <span>Failure Reason Logged</span>
             </div>
-            <p className="text-rose-600 text-sm">{task.failureReason}</p>
+            <p className="text-xs text-rose-600 dark:text-rose-300">
+              {task.failureReason}
+            </p>
           </div>
         )}
-
-        {/* Created date */}
-        <div className="text-xs text-gray-400 pt-2 border-t border-gray-50">
-          Created on {new Date(task.createdAt).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-        </div>
       </div>
 
-      {/* ── Comments Section ── */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-gray-800">
-          <MessageSquare className="w-4 h-4 text-blue-500" />
-          Comments
-          <span className="text-xs text-gray-400 font-normal bg-gray-100 px-2 py-0.5 rounded-full ml-1">{comments.length}</span>
+      {/* Discussion & Comments */}
+      <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs p-6 space-y-4 transition-colors">
+        <div className="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="w-4 h-4 text-zinc-500" />
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Activity & Comments
+            </h3>
+          </div>
+          <span className="text-xs font-mono text-zinc-400">
+            {comments.length}
+          </span>
         </div>
 
         {/* Comment list */}
         <div className="space-y-4">
           {comments.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-4">No comments yet. Be the first to comment!</p>
+            <p className="text-xs text-zinc-400 text-center py-6">
+              No comments posted yet.
+            </p>
           ) : (
-            comments.map(comment => (
+            comments.map((comment) => (
               <div key={comment.id} className="flex items-start gap-3 group">
-                {/* Avatar */}
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex-shrink-0 flex items-center justify-center text-white text-xs font-bold">
-                  {comment.user.name.charAt(0).toUpperCase()}
+                <div className="w-7 h-7 rounded-lg bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 flex-shrink-0 flex items-center justify-center text-xs font-bold">
+                  {comment.user?.name?.charAt(0).toUpperCase() || 'U'}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-semibold text-gray-900">{comment.user.name}</span>
-                    <span className="text-xs text-gray-400">{timeAgo(comment.createdAt)}</span>
+                <div className="flex-1 min-w-0 bg-zinc-50/60 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                      {comment.user?.name || 'User'}
+                    </span>
+                    <span className="text-[11px] text-zinc-400">
+                      {timeAgo(comment.createdAt)}
+                    </span>
                   </div>
-                  <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{comment.content}</p>
+                  <p className="text-xs text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">
+                    {comment.content}
+                  </p>
                 </div>
                 <button
                   onClick={() => deleteComment(comment.id)}
-                  className="opacity-0 group-hover:opacity-100 p-1 text-gray-300 hover:text-rose-500 rounded transition-all flex-shrink-0"
+                  className="opacity-0 group-hover:opacity-100 p-1 text-zinc-400 hover:text-rose-500 rounded transition"
                   title="Delete comment"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -466,28 +615,30 @@ export default function TaskDetailPage() {
           )}
         </div>
 
-        {/* New comment input */}
-        <div className="flex items-start gap-3 pt-2 border-t border-gray-100">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex-shrink-0 flex items-center justify-center text-white text-xs font-bold">
-            Me
-          </div>
-          <div className="flex-1 flex items-end gap-2">
-            <textarea
-              value={commentText}
-              onChange={e => setCommentText(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); postComment() } }}
-              placeholder="Write a comment... (Enter to post)"
-              rows={2}
-              className="flex-1 text-sm px-3 py-2 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-            />
-            <button
-              onClick={postComment}
-              disabled={postingComment || !commentText.trim()}
-              className="p-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors flex-shrink-0"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
+        {/* Post comment input */}
+        <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-start gap-2">
+          <textarea
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                postComment()
+              }
+            }}
+            placeholder="Write an update or progress note... (Enter to post)"
+            rows={2}
+            className="flex-1 text-xs sm:text-sm p-3 border border-zinc-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 resize-none"
+          />
+          <Button
+            size="sm"
+            onClick={postComment}
+            disabled={postingComment || !commentText.trim()}
+            isLoading={postingComment}
+            className="h-10 px-3 shrink-0"
+          >
+            <Send className="w-3.5 h-3.5" />
+          </Button>
         </div>
       </div>
     </div>

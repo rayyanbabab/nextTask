@@ -48,16 +48,15 @@ export default async function AdminDashboard() {
   for (const s of statusCounts) statusMap[s.status] = s._count._all
   const total = statusMap.PROCESS + statusMap.SUCCESS + statusMap.FAILED || 1
 
-  // Donut chart segments (SVG circle, r=15.9, circumference=100)
+  // Donut chart segments
   const donutData = [
-    { label: 'Proses', value: statusMap.PROCESS, color: '#6366f1' },
-    { label: 'Selesai', value: statusMap.SUCCESS, color: '#10b981' },
-    { label: 'Gagal', value: statusMap.FAILED, color: '#f43f5e' },
+    { label: 'In Progress', value: statusMap.PROCESS, color: '#f59e0b' },
+    { label: 'Completed', value: statusMap.SUCCESS, color: '#10b981' },
+    { label: 'Failed', value: statusMap.FAILED, color: '#ef4444' },
   ]
 
-  // Calculate SVG stroke-dasharray/offset for donut
   let cumulativePct = 0
-  const donutSegments = donutData.map(d => {
+  const donutSegments = donutData.map((d) => {
     const pct = (d.value / total) * 100
     const offset = -cumulativePct
     cumulativePct += pct
@@ -65,51 +64,63 @@ export default async function AdminDashboard() {
   })
 
   return (
-    <div className="p-6 space-y-8 max-w-7xl mx-auto">
+    <div className="space-y-6">
+      {/* Title */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-sm text-gray-500 mt-1">Ringkasan aktivitas seluruh sistem</p>
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+          Admin Overview
+        </h1>
+        <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          System telemetry, organization-wide metrics, and global audit logs.
+        </p>
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         <StatCard
-          icon={<Users className="w-5 h-5 text-indigo-600" />}
-          iconBg="bg-indigo-50"
-          label="Total User"
+          icon={<Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
+          iconBg="bg-indigo-50 dark:bg-indigo-950/50"
+          label="Total Users"
           value={usersCount}
         />
         <StatCard
-          icon={<ClipboardList className="w-5 h-5 text-blue-600" />}
-          iconBg="bg-blue-50"
-          label="Total Tugas"
+          icon={<ClipboardList className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+          iconBg="bg-blue-50 dark:bg-blue-950/50"
+          label="Total Tasks"
           value={tasksCount}
         />
         <StatCard
-          icon={<CheckCircle className="w-5 h-5 text-emerald-600" />}
-          iconBg="bg-emerald-50"
-          label="Selesai Hari Ini"
+          icon={<CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+          iconBg="bg-emerald-50 dark:bg-emerald-950/50"
+          label="Completed Today"
           value={completedToday}
         />
         <StatCard
-          icon={<MessageSquare className="w-5 h-5 text-violet-600" />}
-          iconBg="bg-violet-50"
-          label="Total Komentar"
+          icon={<MessageSquare className="w-4 h-4 text-violet-600 dark:text-violet-400" />}
+          iconBg="bg-violet-50 dark:bg-violet-950/50"
+          label="Total Comments"
           value={commentsCount}
         />
       </div>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-        {/* Donut Chart — Task Status Distribution */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h2 className="text-base font-semibold text-gray-800 mb-5">Distribusi Status Tugas</h2>
-          <div className="flex items-center gap-8">
-            {/* SVG Donut */}
+        {/* Donut Chart */}
+        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs p-6 flex flex-col justify-between transition-colors">
+          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
+            Global Task Status Distribution
+          </h2>
+          <div className="flex flex-col sm:flex-row items-center gap-8 py-2">
             <div className="relative flex-shrink-0">
               <svg viewBox="0 0 36 36" className="w-36 h-36 -rotate-90">
-                <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f3f4f6" strokeWidth="3.5" />
+                <circle
+                  cx="18"
+                  cy="18"
+                  r="15.9"
+                  fill="none"
+                  className="stroke-zinc-100 dark:stroke-zinc-800"
+                  strokeWidth="3.2"
+                />
                 {donutSegments.map((seg, i) => (
                   <circle
                     key={i}
@@ -118,31 +129,39 @@ export default async function AdminDashboard() {
                     r="15.9"
                     fill="none"
                     stroke={seg.color}
-                    strokeWidth="3.5"
+                    strokeWidth="3.2"
                     strokeDasharray={`${seg.pct} ${100 - seg.pct}`}
                     strokeDashoffset={seg.offset}
                     strokeLinecap="butt"
-                    style={{ transition: 'stroke-dasharray 0.5s ease' }}
                   />
                 ))}
               </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-bold text-gray-900">{tasksCount}</span>
-                <span className="text-xs text-gray-400">tugas</span>
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+                  {tasksCount}
+                </span>
+                <span className="text-[10px] uppercase font-semibold text-zinc-400">
+                  Tasks
+                </span>
               </div>
             </div>
 
-            {/* Legend */}
-            <div className="space-y-3 flex-1">
-              {donutData.map(d => (
-                <div key={d.label} className="flex items-center justify-between">
+            <div className="space-y-3 flex-1 w-full text-xs">
+              {donutData.map((d) => (
+                <div
+                  key={d.label}
+                  className="flex items-center justify-between text-zinc-600 dark:text-zinc-400"
+                >
                   <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: d.color }} />
-                    <span className="text-sm text-gray-600">{d.label}</span>
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ background: d.color }}
+                    />
+                    <span>{d.label}</span>
                   </div>
-                  <div className="text-right">
-                    <span className="text-sm font-semibold text-gray-900">{d.value}</span>
-                    <span className="text-xs text-gray-400 ml-1.5">
+                  <div className="font-medium text-zinc-900 dark:text-zinc-100">
+                    <span>{d.value}</span>
+                    <span className="text-zinc-400 font-normal ml-1.5">
                       ({total > 0 ? Math.round((d.value / total) * 100) : 0}%)
                     </span>
                   </div>
@@ -152,30 +171,34 @@ export default async function AdminDashboard() {
           </div>
         </div>
 
-        {/* Top Active Users */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h2 className="text-base font-semibold text-gray-800 mb-5 flex items-center gap-2">
+        {/* Top Users */}
+        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs p-6 space-y-4 transition-colors">
+          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
             <Trophy className="w-4 h-4 text-amber-500" />
-            Top 5 User Teraktif
+            <span>Most Active Contributors</span>
           </h2>
           <div className="space-y-3">
             {topUsers.map((u, i) => {
-              const pct = tasksCount > 0 ? Math.round((u._count.tasks / tasksCount) * 100) : 0
-              const medals = ['🥇', '🥈', '🥉']
+              const pct =
+                tasksCount > 0 ? Math.round((u._count.tasks / tasksCount) * 100) : 0
               return (
                 <div key={u.id} className="flex items-center gap-3">
-                  <span className="text-base w-6 text-center flex-shrink-0">
-                    {medals[i] ?? <span className="text-gray-400 text-xs font-bold">#{i + 1}</span>}
+                  <span className="text-xs font-bold text-zinc-400 w-5 text-center">
+                    #{i + 1}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="text-sm font-medium text-gray-800 truncate">{u.name}</p>
-                      <span className="text-xs text-gray-500 flex-shrink-0 ml-2">{u._count.tasks} tugas</span>
+                    <div className="flex items-center justify-between mb-1 text-xs">
+                      <p className="font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                        {u.name}
+                      </p>
+                      <span className="text-zinc-400 font-mono">
+                        {u._count.tasks} tasks
+                      </span>
                     </div>
-                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-1 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 rounded-full"
-                        style={{ width: `${pct}%`, transition: 'width 0.6s ease' }}
+                        className="h-full bg-indigo-500 rounded-full transition-all duration-500"
+                        style={{ width: `${pct}%` }}
                       />
                     </div>
                   </div>
@@ -183,37 +206,48 @@ export default async function AdminDashboard() {
               )
             })}
             {topUsers.length === 0 && (
-              <p className="text-sm text-gray-400 text-center py-4">Belum ada data.</p>
+              <p className="text-xs text-zinc-400 text-center py-6">
+                No user records available.
+              </p>
             )}
           </div>
         </div>
       </div>
 
       {/* Activity Logs */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <h2 className="text-base font-semibold text-gray-800 mb-4 flex items-center gap-2">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs p-6 space-y-4 transition-colors">
+        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
           <ActivitySquare className="w-4 h-4 text-indigo-500" />
-          Aktivitas Terbaru
+          <span>System Activity Log</span>
         </h2>
         <ul className="space-y-2">
           {logs.length === 0 && (
-            <li className="text-sm text-gray-400 text-center py-4">Belum ada aktivitas.</li>
+            <li className="text-xs text-zinc-400 text-center py-6">
+              No activity logs recorded.
+            </li>
           )}
-          {logs.map(log => (
+          {logs.map((log) => (
             <li
               key={log.id}
-              className="flex items-start justify-between gap-4 px-4 py-3 rounded-xl bg-gray-50 hover:bg-gray-100/60 transition-colors"
+              className="flex items-start justify-between gap-4 px-4 py-2.5 rounded-lg bg-zinc-50/60 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800 text-xs transition-colors"
             >
-              <div className="flex items-start gap-3">
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 flex-shrink-0 mt-2" />
+              <div className="flex items-start gap-2.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0 mt-1.5" />
                 <div>
-                  <span className="text-xs font-semibold text-indigo-600 mr-1.5">{log.user.name}</span>
-                  <span className="text-sm text-gray-700">{log.action}</span>
+                  <span className="font-semibold text-indigo-600 dark:text-indigo-400 mr-1.5">
+                    {log.user.name}
+                  </span>
+                  <span className="text-zinc-700 dark:text-zinc-300">
+                    {log.action}
+                  </span>
                 </div>
               </div>
-              <span className="text-xs text-gray-400 flex-shrink-0 whitespace-nowrap">
-                {new Date(log.createdAt).toLocaleString('id-ID', {
-                  day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+              <span className="text-[11px] text-zinc-400 shrink-0 font-mono">
+                {new Date(log.createdAt).toLocaleString('en-US', {
+                  day: 'numeric',
+                  month: 'short',
+                  hour: '2-digit',
+                  minute: '2-digit',
                 })}
               </span>
             </li>
@@ -236,13 +270,19 @@ function StatCard({
   value: number
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
-      <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
+    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs p-5 flex items-center gap-3.5 transition-colors">
+      <div
+        className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${iconBg}`}
+      >
         {icon}
       </div>
       <div>
-        <p className="text-xs text-gray-500 font-medium">{label}</p>
-        <p className="text-2xl font-bold text-gray-900 mt-0.5">{value.toLocaleString('id-ID')}</p>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+          {label}
+        </p>
+        <p className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+          {value.toLocaleString()}
+        </p>
       </div>
     </div>
   )

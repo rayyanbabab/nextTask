@@ -1,9 +1,9 @@
 'use client'
 
-import { SquarePen, Pencil, Trash2, ChevronDown, ChevronUp, FileText } from 'lucide-react'
+import { Pencil, Trash2, ChevronDown, ChevronUp, FileText, Plus, Folder } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { FormCard } from '@/components/ui/FormCard'
+import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 
 type Task = {
@@ -20,16 +20,21 @@ type Category = {
   tasks: Task[]
 }
 
-export default function Page() {
+export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [openCategoryId, setOpenCategoryId] = useState<number | null>(null)
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const res = await fetch('/api/categories/categories-with-task')
-      const data = await res.json()
-      setCategories(data)
+      try {
+        const res = await fetch('/api/categories/categories-with-task')
+        const data = await res.json()
+        setCategories(data || [])
+      } finally {
+        setLoading(false)
+      }
     }
     fetchCategories()
   }, [])
@@ -39,67 +44,166 @@ export default function Page() {
   }
 
   const handleDelete = async (id: number) => {
-    const confirm = window.confirm('Are you sure you want to delete this category?')
-    if (!confirm) return
+    const confirmDelete = window.confirm('Are you sure you want to delete this category?')
+    if (!confirmDelete) return
 
     await fetch(`/api/categories/${id}`, { method: 'DELETE' })
-    setCategories(prev => prev.filter(cat => cat.id !== id))
+    setCategories((prev) => prev.filter((cat) => cat.id !== id))
   }
 
   return (
-    <FormCard title="Your Task Categories" subtitle="Click a category to see its tasks">
-      <div className="space-y-4">
-        {categories.map((category) => (
-          <div key={category.id} className="bg-white border border-gray-200 rounded-md p-3 shadow-sm">
-            <div className="flex justify-between items-center cursor-pointer" onClick={() => toggleCategory(category.id)}>
-              <div className='flex items-center space-x-2'>
-                <SquarePen className='text-gray-700' />
-                <h3 className="font-medium text-md text-gray-600">
-                  {category.name} <span className="ml-1 text-xs px-2 py-1 border border-green-200 bg-green-100 text-green-700 rounded-full">{category.tasks.length} Tasks</span>
-                </h3>
-              </div>
-              {openCategoryId === category.id ? <ChevronUp /> : <ChevronDown />}
-            </div>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+            Task Categories
+          </h1>
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+            Group your workflows by client, project, or operational department.
+          </p>
+        </div>
 
-            {openCategoryId === category.id && (
-              <div className="mt-2 space-y-2">
-                {category.tasks.length > 0 ? (
-                  category.tasks.map((task) => (
-                    <div key={task.id} className="w-1/2 bg-white border border-gray-200 p-2 rounded-lg">
-                      <div className="flex items-center space-x-2">
-                        <div className='bg-sky-100 p-2 rounded-md'>
-                          <FileText strokeWidth={1.5} className="text-sky-700" />
-                        </div>
-                        <div className="flex flex-col">
-                          <div className="font-semibold text-sm text-gray-800">{task.title}</div>
-                          {task.description && (
-                            <p className="text-xs text-gray-500">{task.description}</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="w-1/2 p-2 bg-gray-100 text-gray-500 font-semibold rounded-lg text-sm">No tasks in this category.</p>
-                )}
-
-                <div className="flex space-x-2 mt-2">
-                  <Button variant="outline" size="sm" onClick={() => router.push(`/dashboard/categories/${category.id}/edit`)}>
-                    <Pencil className="w-4 h-4 mr-1" /> Edit
-                  </Button>
-                  <Button variant="destructive" size="sm" onClick={() => handleDelete(category.id)}>
-                    <Trash2 className="w-4 h-4 mr-1" /> Delete
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-
-        <Button variant="default" onClick={() => router.push('/dashboard/categories/create')}>
-          Add New Category
-        </Button>
+        <Link
+          href="/dashboard/categories/create"
+          className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950 text-xs font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition shadow-xs self-start sm:self-auto cursor-pointer"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>New Category</span>
+        </Link>
       </div>
-    </FormCard>
+
+      {/* Categories List */}
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="h-16 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 animate-pulse"
+            />
+          ))}
+        </div>
+      ) : categories.length === 0 ? (
+        <div className="text-center py-16 bg-white dark:bg-zinc-900/60 rounded-xl border border-zinc-200/80 dark:border-zinc-800 p-8">
+          <div className="w-12 h-12 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-3 text-zinc-400">
+            <Folder className="w-6 h-6" />
+          </div>
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            No categories defined yet
+          </h3>
+          <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
+            Create categories to neatly organize your daily tasks.
+          </p>
+          <Button
+            size="sm"
+            className="mt-4"
+            onClick={() => router.push('/dashboard/categories/create')}
+          >
+            Create your first category
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {categories.map((category) => {
+            const isOpen = openCategoryId === category.id
+
+            return (
+              <div
+                key={category.id}
+                className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs transition-colors overflow-hidden"
+              >
+                {/* Accordion header */}
+                <div
+                  className="flex items-center justify-between p-4 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition select-none"
+                  onClick={() => toggleCategory(category.id)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 flex items-center justify-center">
+                      <Folder className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                        {category.name}
+                      </h2>
+                      <span className="text-[11px] text-zinc-400">
+                        {category.tasks.length} {category.tasks.length === 1 ? 'task' : 'tasks'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono">
+                      {category.tasks.length}
+                    </span>
+                    {isOpen ? (
+                      <ChevronUp className="w-4 h-4 text-zinc-400" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-zinc-400" />
+                    )}
+                  </div>
+                </div>
+
+                {/* Collapsible Content */}
+                {isOpen && (
+                  <div className="px-4 pb-4 pt-1 border-t border-zinc-100 dark:border-zinc-800/70 space-y-4">
+                    {/* Task Cards in this category */}
+                    {category.tasks.length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-3">
+                        {category.tasks.map((task) => (
+                          <div
+                            key={task.id}
+                            onClick={() => router.push(`/dashboard/tasks/${task.id}`)}
+                            className="p-3 rounded-lg border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 hover:border-zinc-300 dark:hover:border-zinc-700 transition cursor-pointer space-y-1.5"
+                          >
+                            <div className="flex items-start gap-2">
+                              <FileText className="w-3.5 h-3.5 text-blue-500 mt-0.5 shrink-0" />
+                              <div className="min-w-0">
+                                <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                                  {task.title}
+                                </h4>
+                                {task.description && (
+                                  <p className="text-[11px] text-zinc-400 line-clamp-1">
+                                    {task.description}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="py-6 text-center text-xs text-zinc-400">
+                        No tasks assigned to this category yet.
+                      </div>
+                    )}
+
+                    {/* Category Management Actions */}
+                    <div className="flex items-center gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => router.push(`/dashboard/categories/${category.id}/edit`)}
+                      >
+                        <Pencil className="w-3.5 h-3.5 mr-1 text-zinc-500" />
+                        <span>Edit Category</span>
+                      </Button>
+
+                      <Button
+                        variant="subtleDestructive"
+                        size="sm"
+                        onClick={() => handleDelete(category.id)}
+                      >
+                        <Trash2 className="w-3.5 h-3.5 mr-1" />
+                        <span>Delete</span>
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
   )
 }
