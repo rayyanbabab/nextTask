@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
+import { Logo } from '@/components/ui/Logo'
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
@@ -17,9 +18,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       {/* Top Bar */}
       <header className="relative z-10 w-full max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
         <Link href="/login" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs tracking-wider shadow-xs group-hover:scale-105 transition-transform">
-            NT
-          </div>
+          <Logo size="md" />
           <span className="font-semibold text-base tracking-tight text-zinc-900 dark:text-zinc-50">
             Nexttask
           </span>

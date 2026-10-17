@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { Mail, Lock, User as UserIcon, Eye, EyeOff, AlertCircle, ArrowRight, ShieldCheck, UserCheck } from 'lucide-react'
+import { Mail, Lock, User as UserIcon, Eye, EyeOff, AlertCircle, ArrowRight, Shield } from 'lucide-react'
 import { Input } from './ui/Input'
 import { Button } from './ui/Button'
 
@@ -82,33 +82,37 @@ export default function AuthForm() {
 
       {/* Quick Demo Credentials Pill (Login mode only) */}
       {isLogin && (
-        <div className="bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/60 rounded-xl p-3 space-y-2">
-          <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-            <span>Quick Demo Accounts</span>
-            <span className="text-[10px] lowercase text-zinc-400 font-normal">Click to fill</span>
+        <div className="bg-zinc-50/80 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800 rounded-xl p-3 space-y-2">
+          <div className="flex items-center justify-between text-[11px] font-medium tracking-wide text-zinc-500 dark:text-zinc-400">
+            <span>Demo Quick Access</span>
+            <span className="text-[10px] text-zinc-400 font-normal">Click to fill</span>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => fillQuickAccount('admin@example.com', 'admin123')}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs font-medium text-zinc-800 dark:text-zinc-200 hover:border-blue-500 dark:hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition cursor-pointer text-left"
+              className="flex items-center gap-2 p-2 rounded-lg border border-zinc-200/80 dark:border-zinc-700/80 bg-white dark:bg-zinc-900 text-xs font-medium text-zinc-800 dark:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition cursor-pointer text-left shadow-xs group"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-              <div className="truncate">
-                <span className="font-semibold">Admin</span>
-                <span className="text-[10px] text-zinc-400 block truncate">admin@example.com</span>
+              <div className="w-6 h-6 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 shrink-0">
+                <Shield className="w-3.5 h-3.5" />
+              </div>
+              <div className="truncate min-w-0">
+                <span className="font-semibold block truncate text-zinc-900 dark:text-zinc-100">Admin</span>
+                <span className="text-[10px] text-zinc-400 dark:text-zinc-500 block truncate">admin@example.com</span>
               </div>
             </button>
 
             <button
               type="button"
               onClick={() => fillQuickAccount('john@example.com', 'user123')}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs font-medium text-zinc-800 dark:text-zinc-200 hover:border-blue-500 dark:hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition cursor-pointer text-left"
+              className="flex items-center gap-2 p-2 rounded-lg border border-zinc-200/80 dark:border-zinc-700/80 bg-white dark:bg-zinc-900 text-xs font-medium text-zinc-800 dark:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition cursor-pointer text-left shadow-xs group"
             >
-              <UserCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-              <div className="truncate">
-                <span className="font-semibold">User (John)</span>
-                <span className="text-[10px] text-zinc-400 block truncate">john@example.com</span>
+              <div className="w-6 h-6 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 shrink-0">
+                <UserIcon className="w-3.5 h-3.5" />
+              </div>
+              <div className="truncate min-w-0">
+                <span className="font-semibold block truncate text-zinc-900 dark:text-zinc-100">User (John)</span>
+                <span className="text-[10px] text-zinc-400 dark:text-zinc-500 block truncate">john@example.com</span>
               </div>
             </button>
           </div>

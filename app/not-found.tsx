@@ -1,12 +1,12 @@
 import Link from 'next/link'
-import { ArrowLeft, Home, Compass } from 'lucide-react'
+import { ArrowLeft, Home, FileQuestion } from 'lucide-react'
 
 export default function NotFound() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 p-6 select-none">
       <div className="max-w-md w-full text-center space-y-6">
         <div className="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center mx-auto shadow-xs text-zinc-500 dark:text-zinc-400">
-          <Compass className="w-8 h-8" />
+          <FileQuestion className="w-8 h-8 stroke-[1.75]" />
         </div>
 
         <div className="space-y-2">

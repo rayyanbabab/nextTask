@@ -1,6 +1,6 @@
 'use client'
 
-import { LayoutDashboard, Users, LogOut, ClipboardList, Menu, X, ArrowLeft } from 'lucide-react'
+import { LayoutDashboard, Users, ClipboardList, Menu, X, ArrowLeft, Shield, LogOut } from 'lucide-react'
 import { useUser } from '@/context/UserContext'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
@@ -36,8 +36,8 @@ export default function AdminSidebar() {
       {/* Brand */}
       <div className="h-16 px-5 border-b border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs tracking-wider shadow-xs">
-            AD
+          <div className="w-8 h-8 rounded-lg bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 flex items-center justify-center shadow-xs">
+            <Shield size={16} strokeWidth={2.2} />
           </div>
           <div>
             <div className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-50 flex items-center gap-1.5">

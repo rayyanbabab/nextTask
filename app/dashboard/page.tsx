@@ -8,10 +8,10 @@ import {
   AlertTriangle,
   TrendingUp,
   Plus,
-  LayoutGrid,
+  Kanban,
   BarChart3,
   ChevronRight,
-  Flame,
+  CalendarClock,
   ArrowUpRight,
   ListTodo,
 } from 'lucide-react'
@@ -113,7 +113,7 @@ export default function DashboardPage() {
             href="/dashboard/kanban"
             className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-xs font-medium transition shadow-xs"
           >
-            <LayoutGrid className="w-3.5 h-3.5" />
+            <Kanban className="w-3.5 h-3.5" />
             <span>Kanban</span>
           </Link>
 
@@ -300,7 +300,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between p-5 border-b border-zinc-100 dark:border-zinc-800/80">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-lg">
-              <Flame className="w-4 h-4" />
+              <CalendarClock className="w-4 h-4" />
             </div>
             <div>
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">

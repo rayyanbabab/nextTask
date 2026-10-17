@@ -1,6 +1,6 @@
 'use client'
 
-import { LogOut, Menu, X, ShieldAlert } from 'lucide-react'
+import { LogOut, Menu, X, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import clsx from 'clsx'
@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react'
 
 import { useUser } from '@/context/UserContext'
 import { navItems } from '@/constants/navItems'
+import { Logo } from '@/components/ui/Logo'
 
 export default function Sidebar() {
   const { user, logout } = useUser()
@@ -41,9 +42,7 @@ export default function Sidebar() {
       {/* Brand Header */}
       <div className="h-16 px-5 border-b border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs tracking-wider shadow-xs transition-transform group-hover:scale-105">
-            NT
-          </div>
+          <Logo size="md" />
           <div>
             <div className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-50 flex items-center gap-1.5">
               <span>Nexttask</span>
@@ -126,7 +125,7 @@ export default function Sidebar() {
               href="/admin/dashboard"
               className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100/80 text-indigo-700 dark:bg-indigo-950/40 dark:hover:bg-indigo-950/70 dark:text-indigo-300 transition-colors"
             >
-              <ShieldAlert className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+              <Shield className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
               <span>Admin Panel</span>
             </Link>
           </div>

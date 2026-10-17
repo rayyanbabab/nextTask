@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { Plus, Sun, Moon, ShieldCheck, ChevronRight } from 'lucide-react'
+import { Plus, Sun, Moon, Shield, ChevronRight } from 'lucide-react'
 import { useUser } from '@/context/UserContext'
 import { useTheme } from '@/context/ThemeContext'
 import { useRouter, usePathname } from 'next/navigation'
@@ -50,9 +50,9 @@ export default function Header() {
         {user?.role === 'ADMIN' && (
           <Link
             href="/admin/dashboard"
-            className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-xs font-medium hover:bg-indigo-100/70 transition"
+            className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 text-zinc-700 dark:text-zinc-200 text-xs font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
           >
-            <ShieldCheck className="w-3.5 h-3.5" />
+            <Shield className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
             <span>Admin</span>
           </Link>
         )}
